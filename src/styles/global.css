@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  /* Super Bowl themed color palette - deep blues */
+  --color-primary-50: oklch(0.97 0.01 250);
+  --color-primary-100: oklch(0.93 0.02 250);
+  --color-primary-200: oklch(0.85 0.04 250);
+  --color-primary-300: oklch(0.75 0.08 250);
+  --color-primary-400: oklch(0.65 0.12 250);
+  --color-primary-500: oklch(0.55 0.16 250);
+  --color-primary-600: oklch(0.45 0.18 250);
+  --color-primary-700: oklch(0.35 0.16 250);
+  --color-primary-800: oklch(0.25 0.12 250);
+  --color-primary-900: oklch(0.15 0.08 250);
+  --color-primary-950: oklch(0.10 0.06 250);
+
+  /* Accent gold for championship feel */
+  --color-gold-300: oklch(0.88 0.12 85);
+  --color-gold-400: oklch(0.82 0.15 85);
+  --color-gold-500: oklch(0.75 0.18 85);
+  --color-gold-600: oklch(0.68 0.16 85);
+
+  /* Typography - bold sports style */
+  --font-family-display: "Impact", "Haettenschweiler", "Arial Narrow Bold",
+    sans-serif;
+  --font-family-body: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .text-shadow-bold {
+    text-shadow:
+      2px 2px 0 rgba(0, 0, 0, 0.3),
+      4px 4px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .text-shadow-glow {
+    text-shadow:
+      0 0 20px currentColor,
+      0 0 40px currentColor;
+  }
+}
+
+/* Base styles */
+@layer base {
+  html {
+    font-family: var(--font-family-body);
+  }
+
+  body {
+    @apply bg-primary-950 text-white min-h-screen;
+  }
+}

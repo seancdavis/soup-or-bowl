@@ -1,19 +1,22 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { Header } from "../components/layout/Header";
+import { Footer } from "../components/layout/Footer";
+import { Hero } from "../components/home/Hero";
+import { SaveTheDate } from "../components/home/SaveTheDate";
+
+// User is guaranteed by middleware (this is a protected page)
+const user = Astro.locals.user;
 ---
 
-<Layout title="Soup or Bowl 2026">
-  <main
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-950 via-primary-900 to-primary-950"
-  >
-    <div class="text-center px-4">
-      <h1
-        class="font-[family-name:var(--font-family-display)] text-6xl md:text-8xl lg:text-9xl text-white text-shadow-bold uppercase tracking-tight"
-      >
-        Soup<span class="text-gold-500">or</span>Bowl
-      </h1>
-      <p class="text-2xl md:text-4xl text-gold-400 font-bold mt-4">2026</p>
-      <p class="text-primary-300 mt-8 text-lg">Setting up...</p>
-    </div>
+<Layout title="Soup or Bowl 2026 - Save the Date">
+  <Header user={user} />
+
+  <main class="pt-16">
+    {/* pt-16 to account for fixed header */}
+    <Hero />
+    <SaveTheDate />
   </main>
+
+  <Footer />
 </Layout>

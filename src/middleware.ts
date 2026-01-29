@@ -12,7 +12,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // During build time, env vars aren't available - skip auth checks
   // Auth will be enforced at runtime via edge middleware
-  if (!import.meta.env.NEON_AUTH_URL || !import.meta.env.DATABASE_URL) {
+  if (!import.meta.env.NEON_AUTH_URL || !import.meta.env.NETLIFY_DATABASE_URL) {
     context.locals.user = null;
     context.locals.isApproved = false;
     return next();

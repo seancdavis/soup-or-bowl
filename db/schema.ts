@@ -1,9 +1,9 @@
 import {
+  integer,
   pgTable,
-  serial,
+  varchar,
   text,
   timestamp,
-  varchar,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -11,12 +11,12 @@ import {
  * Add users via Neon console or Drizzle queries.
  */
 export const approvedUsers = pgTable("approved_users", {
-  id: serial("id").primaryKey(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  name: varchar("name", { length: 255 }),
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  email: varchar({ length: 255 }).notNull().unique(),
+  name: varchar({ length: 255 }),
   addedAt: timestamp("added_at").defaultNow(),
   addedBy: varchar("added_by", { length: 255 }),
-  notes: text("notes"),
+  notes: text(),
 });
 
 // Type inference for TypeScript

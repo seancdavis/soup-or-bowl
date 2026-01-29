@@ -26,8 +26,10 @@ This is the Soup or Bowl 2026 application - a Super Bowl party app with a soup c
 
 ### Database
 - Use Drizzle ORM for all database operations
-- Schema defined in `src/db/schema.ts`
-- Run `npm run db:push` to sync schema changes
+- Schema defined in `db/schema.ts` (root level, per Netlify DB convention)
+- Database client in `src/db/index.ts`
+- Run `npm run db:generate` to create migrations
+- Run `npm run db:migrate` to apply migrations
 - Never write raw SQL outside of Drizzle
 
 ## Design System
@@ -80,9 +82,10 @@ This is the Soup or Bowl 2026 application - a Super Bowl party app with a soup c
 3. Use existing UI primitives (Button, Card, Container)
 
 ### Adding a database table
-1. Define schema in `src/db/schema.ts`
-2. Run `npm run db:push` to sync
-3. Import from `src/db` to query
+1. Define schema in `db/schema.ts`
+2. Run `npm run db:generate` to create migration
+3. Run `npm run db:migrate` to apply
+4. Import from `src/db` to query
 
 ### Adding an API route
 1. Create `src/pages/api/your-route.ts`
@@ -92,16 +95,17 @@ This is the Soup or Bowl 2026 application - a Super Bowl party app with a soup c
 ## Environment Variables
 
 Required in production:
-- `DATABASE_URL` - Neon PostgreSQL connection string
-- `NEON_AUTH_URL` - NeonAuth endpoint URL
+- `NETLIFY_DATABASE_URL` - Neon PostgreSQL connection string (auto-provisioned by Netlify DB)
+- `NEON_AUTH_URL` - NeonAuth endpoint URL (from Neon Console > Auth tab)
 
-These are automatically available in Netlify after running `netlify db init`.
+`NETLIFY_DATABASE_URL` is automatically set after running `netlify db init`.
 
 ## Commands
 
 ```bash
-npm run dev        # Start dev server
-npm run build      # Production build
-npm run db:push    # Sync schema to database
-npm run db:studio  # Open Drizzle Studio
+npm run dev          # Start dev server
+npm run build        # Production build
+npm run db:generate  # Generate migrations from schema
+npm run db:migrate   # Apply migrations to database
+npm run db:studio    # Open Drizzle Studio
 ```

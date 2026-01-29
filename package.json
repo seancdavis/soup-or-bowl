@@ -9,13 +9,15 @@
     "astro": "astro",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "netlify dev:exec drizzle-kit studio",
+    "db:migrate": "netlify dev:exec drizzle-kit migrate"
   },
   "dependencies": {
     "@astrojs/netlify": "^6.6.4",
     "@astrojs/react": "^4.4.2",
     "@neondatabase/neon-js": "^0.1.0-beta.22",
     "@neondatabase/serverless": "^1.0.2",
+    "@netlify/neon": "^0.1.2",
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.16.15",
     "drizzle-orm": "^0.45.1",

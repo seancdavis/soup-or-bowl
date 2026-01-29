@@ -46,9 +46,10 @@ npm run dev
    ```bash
    npx netlify db init
    ```
-3. Push the schema:
+3. Generate and run migrations:
    ```bash
-   npm run db:push
+   npm run db:generate
+   npm run db:migrate
    ```
 4. Add approved users via Neon Console or Drizzle
 
@@ -57,8 +58,8 @@ npm run dev
 Copy `.env.example` to `.env` and fill in the values:
 
 ```bash
-# Database (provided by Netlify DB)
-DATABASE_URL=postgresql://...
+# Database (auto-provisioned by Netlify DB)
+NETLIFY_DATABASE_URL=postgresql://...
 
 # NeonAuth (from Neon Console > Auth tab)
 NEON_AUTH_URL=https://your-project.auth.neon.tech
@@ -80,32 +81,34 @@ NEON_AUTH_URL=https://your-project.auth.neon.tech
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
 | `npm run db:generate` | Generate Drizzle migrations |
-| `npm run db:push` | Push schema to database |
+| `npm run db:migrate` | Apply migrations to database |
 | `npm run db:studio` | Open Drizzle Studio |
 
 ## Project Structure
 
 ```
-src/
-├── components/
-│   ├── ui/          # Base UI primitives (Button, Card, Container)
-│   ├── layout/      # Layout components (Header, Footer)
-│   ├── auth/        # Auth components (LoginButton, UserMenu)
-│   └── home/        # Home page components (Hero, SaveTheDate)
 ├── db/
-│   ├── schema.ts    # Drizzle schema (approved_users table)
-│   └── index.ts     # Database client
-├── lib/
-│   └── auth.ts      # NeonAuth client
-├── layouts/
-│   └── Layout.astro # Base HTML layout
-├── pages/
-│   ├── index.astro  # Home page (protected)
-│   ├── login.astro  # Login page (public)
-│   └── api/auth/    # Auth API routes
-├── styles/
-│   └── global.css   # Tailwind + custom theme
-└── middleware.ts    # Auth middleware (edge)
+│   └── schema.ts      # Drizzle schema (approved_users table)
+├── migrations/        # Generated Drizzle migrations
+├── src/
+│   ├── components/
+│   │   ├── ui/        # Base UI primitives (Button, Card, Container)
+│   │   ├── layout/    # Layout components (Header, Footer)
+│   │   ├── auth/      # Auth components (LoginButton, UserMenu)
+│   │   └── home/      # Home page components (Hero, SaveTheDate)
+│   ├── db/
+│   │   └── index.ts   # Database client
+│   ├── lib/
+│   │   └── auth.ts    # NeonAuth client
+│   ├── layouts/
+│   │   └── Layout.astro # Base HTML layout
+│   ├── pages/
+│   │   ├── index.astro  # Home page (protected)
+│   │   ├── login.astro  # Login page (public)
+│   │   └── api/auth/    # Auth API routes
+│   ├── styles/
+│   │   └── global.css   # Tailwind + custom theme
+│   └── middleware.ts    # Auth middleware (edge)
 ```
 
 ## Authentication Flow

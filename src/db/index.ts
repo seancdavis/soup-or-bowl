@@ -1,19 +1,19 @@
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
-import * as schema from "./schema";
+import * as schema from "../../db/schema";
 
 // Lazy database connection - only connects when first used
 let _db: NeonHttpDatabase<typeof schema> | null = null;
 
 /**
  * Get the database instance. Creates connection on first call.
- * Throws if DATABASE_URL is not set.
+ * Throws if NETLIFY_DATABASE_URL is not set.
  */
 export function getDb(): NeonHttpDatabase<typeof schema> {
   if (!_db) {
-    const databaseUrl = import.meta.env.DATABASE_URL;
+    const databaseUrl = import.meta.env.NETLIFY_DATABASE_URL;
     if (!databaseUrl) {
-      throw new Error("DATABASE_URL environment variable is not set");
+      throw new Error("NETLIFY_DATABASE_URL environment variable is not set");
     }
     const sql: NeonQueryFunction<false, false> = neon(databaseUrl);
     _db = drizzle(sql, { schema });
@@ -30,4 +30,4 @@ export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
 });
 
 // Re-export schema for convenience
-export * from "./schema";
+export * from "../../db/schema";

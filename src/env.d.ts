@@ -2,7 +2,7 @@
 
 // Environment variable types
 interface ImportMetaEnv {
-  readonly DATABASE_URL: string;
+  readonly NETLIFY_DATABASE_URL: string;
   readonly NEON_AUTH_URL: string;
 }
 

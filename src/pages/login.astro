@@ -1,13 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { Hero } from "../components/home/Hero";
 import { LoginButton } from "../components/auth/LoginButton";
-import { Card } from "../components/ui/Card";
 ---
 
 <Layout title="Sign In - Soup or Bowl 2026">
   <main class="relative">
-    {/* Hero background - reuse the hero styling */}
+    {/* Hero background */}
     <div class="absolute inset-0 bg-primary-950">
       <div
         class="absolute inset-0 opacity-40"
@@ -44,8 +42,17 @@ import { Card } from "../components/ui/Card";
     <div
       class="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-20"
     >
+      {/* Super Bowl badge at top */}
+      <div class="absolute top-8 left-0 right-0 flex items-center justify-center gap-3">
+        <span class="h-px w-12 bg-gradient-to-r from-transparent to-gold-500" />
+        <span class="text-gold-400 text-sm tracking-[0.3em] uppercase font-semibold">
+          Super Bowl LX · February 8, 2026
+        </span>
+        <span class="h-px w-12 bg-gradient-to-l from-transparent to-gold-500" />
+      </div>
+
       {/* Logo/Title */}
-      <div class="text-center mb-12">
+      <div class="text-center mb-10">
         <h1
           class="font-[family-name:var(--font-family-display)] text-5xl md:text-7xl text-white uppercase tracking-tight"
           style={{
@@ -55,18 +62,15 @@ import { Card } from "../components/ui/Card";
             `,
           }}
         >
-          Soup<span class="text-gold-500 mx-2 text-[0.5em] align-middle"
-            >or</span
-          >Bowl
+          Soup<span class="text-gold-500 mx-2 text-[0.5em] align-middle">or</span>Bowl
         </h1>
         <p class="text-gold-500 text-2xl font-bold mt-2">2026</p>
       </div>
 
-      {/* Login Card */}
-      <Card variant="bordered" className="max-w-md w-full text-center">
-        <h2 class="text-2xl font-semibold text-white mb-2">Welcome</h2>
-        <p class="text-primary-300 mb-8">
-          Sign in to access your Soup or Bowl dashboard
+      {/* Sign in section */}
+      <div class="text-center max-w-md w-full">
+        <p class="text-primary-200 text-lg mb-8">
+          Sign in to join the competition
         </p>
 
         <LoginButton client:load className="w-full justify-center" />
@@ -74,10 +78,7 @@ import { Card } from "../components/ui/Card";
         <p class="text-xs text-primary-500 mt-6">
           Only pre-approved participants can access the event
         </p>
-      </Card>
-
-      {/* Footer note */}
-      <p class="text-primary-600 text-sm mt-8">Super Bowl LX · February 8, 2026</p>
+      </div>
     </div>
   </main>
 </Layout>

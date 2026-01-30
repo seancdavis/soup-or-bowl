@@ -1,6 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { LoginButton } from "../components/auth/LoginButton";
+import { getUser } from "../lib/auth";
+
+// Redirect logged-in users to home (which handles approval check)
+const user = await getUser(Astro.request);
+if (user) {
+  return Astro.redirect("/");
+}
 ---
 
 <Layout title="Sign In - Soup or Bowl 2026">

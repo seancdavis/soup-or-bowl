@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Button } from "../ui/Button";
-import { authClient } from "../../lib/auth";
 
 interface UserMenuProps {
   user: {
@@ -12,16 +10,6 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-
-  const handleSignOut = async () => {
-    try {
-      await authClient.signOut();
-    } catch (error) {
-      console.error("[UserMenu] Sign out error:", error);
-    }
-    // Hard redirect to clear all state
-    window.location.href = "/login";
-  };
 
   return (
     <div className="relative">
@@ -62,14 +50,12 @@ export function UserMenu({ user }: UserMenuProps) {
             </div>
 
             <div className="px-2 py-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="w-full justify-start text-left text-primary-200 hover:text-white"
+              <a
+                href="/api/auth/signout"
+                className="block w-full px-3 py-1.5 text-sm text-left text-primary-200 hover:text-white hover:bg-white/10 rounded-md transition-colors"
               >
                 Sign out
-              </Button>
+              </a>
             </div>
           </div>
         </>

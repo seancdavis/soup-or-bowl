@@ -2,8 +2,14 @@
 import Layout from "../layouts/Layout.astro";
 import { Card } from "../components/ui/Card";
 import { SignOutButton } from "../components/auth";
+import { getUser } from "../lib/auth";
 
-const user = Astro.locals.user;
+const user = await getUser(Astro.request);
+
+// Must be logged in to see this page
+if (!user) {
+  return Astro.redirect("/login");
+}
 ---
 
 <Layout title="Not Authorized - Soup or Bowl 2026">
@@ -44,7 +50,7 @@ const user = Astro.locals.user;
         <h1 class="text-2xl font-bold text-white mb-2">Not on the Guest List</h1>
 
         <p class="text-primary-300 mb-4">
-          Sorry, <strong class="text-white">{user?.email}</strong> hasn't been approved
+          Sorry, <strong class="text-white">{user.email}</strong> hasn't been approved
           for this event.
         </p>
 

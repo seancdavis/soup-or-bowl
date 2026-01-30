@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
-
-export const prerender = false;
+import { getOrigin } from "../../../lib/auth";
 
 /**
  * OAuth callback handler.
@@ -11,22 +10,22 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   const url = new URL(request.url);
   const verifier = url.searchParams.get("neon_auth_session_verifier");
   const destination = url.searchParams.get("redirect") || "/";
-
-  console.log("[AUTH CALLBACK] Verifier present:", !!verifier);
-  console.log("[AUTH CALLBACK] Destination:", destination);
+  const origin = getOrigin(request);
+  const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
 
   if (!verifier) {
-    console.log("[AUTH CALLBACK] No verifier, redirecting to login");
     return redirect("/login", 302);
   }
 
-  // Check X-Forwarded-Proto for tunnels/proxies that terminate SSL
-  const proto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
-  const origin = `${proto}://${url.host}`;
-
   try {
-    const cookies = request.headers.get("cookie") || "";
-    console.log("[AUTH CALLBACK] Request cookies:", cookies || "(none)");
+    // Get cookies from request - may need to add __Secure- prefix back for Neon Auth
+    let cookies = request.headers.get("cookie") || "";
+    console.log("[CALLBACK] Original cookies:", cookies.substring(0, 100) || "(none)");
+
+    if (isLocalhost) {
+      cookies = fixCookiesForNeonAuth(cookies);
+      console.log("[CALLBACK] Fixed cookies:", cookies.substring(0, 100));
+    }
 
     // Call Neon Auth to finalize the session
     const sessionResponse = await fetch(
@@ -40,27 +39,52 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       }
     );
 
-    console.log("[AUTH CALLBACK] Session response status:", sessionResponse.status);
-
-    // Log response body for debugging
-    const responseText = await sessionResponse.text();
-    console.log("[AUTH CALLBACK] Session response body:", responseText);
-
-    // Get the Set-Cookie headers from Neon Auth
-    const setCookies = sessionResponse.headers.getSetCookie();
-    console.log("[AUTH CALLBACK] Set-Cookie count:", setCookies.length);
-
-    // Create redirect response with cookies
-    const response = redirect(destination, 302);
-
-    for (const cookie of setCookies) {
-      response.headers.append("Set-Cookie", cookie);
+    if (!sessionResponse.ok) {
+      const error = await sessionResponse.text();
+      console.error("[CALLBACK] Session error:", error);
+      return redirect("/login?error=session_failed", 302);
     }
 
-    console.log("[AUTH CALLBACK] Redirecting to:", destination);
+    // Create redirect response with session cookies
+    const response = redirect(destination, 302);
+
+    // Forward cookies, fixing for localhost if needed
+    for (const cookie of sessionResponse.headers.getSetCookie()) {
+      const fixedCookie = isLocalhost ? fixCookieForLocalhost(cookie) : cookie;
+      response.headers.append("Set-Cookie", fixedCookie);
+    }
+
     return response;
   } catch (error) {
-    console.error("[AUTH CALLBACK] Error:", error);
-    return redirect("/login", 302);
+    console.error("[CALLBACK] Error:", error);
+    return redirect("/login?error=callback_failed", 302);
   }
 };
+
+/**
+ * Fix cookies for localhost by removing __Secure- prefix, Secure flag, and Partitioned.
+ * Partitioned cookies require Secure, so we must remove both.
+ */
+function fixCookieForLocalhost(cookie: string): string {
+  return cookie
+    .replace(/^__Secure-/i, "")
+    .replace(/;\s*Secure/gi, "")
+    .replace(/;\s*Partitioned/gi, "")
+    .replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
+}
+
+/**
+ * Add __Secure- prefix back to cookies for Neon Auth.
+ */
+function fixCookiesForNeonAuth(cookieHeader: string): string {
+  const neonCookies = ["neon-auth.session_token", "neon-auth.session_challange"];
+
+  let fixed = cookieHeader;
+  for (const name of neonCookies) {
+    // Add prefix if cookie exists without it
+    const regex = new RegExp(`(^|;\\s*)${name}=`, "g");
+    fixed = fixed.replace(regex, `$1__Secure-${name}=`);
+  }
+
+  return fixed;
+}

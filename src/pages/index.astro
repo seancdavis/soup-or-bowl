@@ -4,19 +4,25 @@ import { Header } from "../components/layout/Header";
 import { Footer } from "../components/layout/Footer";
 import { Hero } from "../components/home/Hero";
 import { SaveTheDate } from "../components/home/SaveTheDate";
+import { getUserWithApproval } from "../lib/auth";
 
-// Server-render this page so middleware can access headers
-export const prerender = false;
+const auth = await getUserWithApproval(Astro.request);
 
-// User is guaranteed by middleware (this is a protected page)
-const user = Astro.locals.user;
+if (!auth) {
+  return Astro.redirect("/login");
+}
+
+if (!auth.isApproved) {
+  return Astro.redirect("/unauthorized");
+}
+
+const { user } = auth;
 ---
 
 <Layout title="Soup or Bowl 2026 - Save the Date">
   <Header user={user} />
 
   <main class="pt-16">
-    {/* pt-16 to account for fixed header */}
     <Hero />
     <SaveTheDate />
   </main>

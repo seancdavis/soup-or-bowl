@@ -1,30 +1,20 @@
 import type { APIRoute } from "astro";
-
-export const prerender = false;
+import { getOrigin } from "../../../lib/auth";
 
 /**
  * Initiates Google OAuth sign-in.
  * Redirects the browser to Google's OAuth consent screen.
  */
 export const GET: APIRoute = async ({ request, redirect }) => {
-  const url = new URL(request.url);
-  // Check X-Forwarded-Proto for tunnels/proxies that terminate SSL
-  const proto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
-  const origin = `${proto}://${url.host}`;
-
-  // Where to go after OAuth completes
+  const origin = getOrigin(request);
   const callbackURL = `${origin}/api/auth/callback?redirect=/`;
 
-  console.log("[SIGNIN] Origin:", origin);
-  console.log("[SIGNIN] Callback URL:", callbackURL);
-
   try {
-    // Request OAuth URL from Neon Auth
     const response = await fetch(`${origin}/neon-auth/sign-in/social`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Origin": origin,
+        Origin: origin,
       },
       body: JSON.stringify({
         provider: "google",
@@ -35,14 +25,18 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     const data = await response.json();
 
     if (data.url) {
-      // Create redirect response
       const redirectResponse = redirect(data.url, 302);
 
-      // Forward Set-Cookie headers from Neon Auth (includes challenge cookie)
+      // Forward challenge cookie from Neon Auth, fixing for localhost if needed
+      const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
       const setCookies = response.headers.getSetCookie();
-      console.log("[SIGNIN] Set-Cookie count:", setCookies.length);
+      console.log("[SIGNIN] Cookies from Neon Auth:", setCookies.length);
+
       for (const cookie of setCookies) {
-        redirectResponse.headers.append("Set-Cookie", cookie);
+        const fixedCookie = isLocalhost ? fixCookieForLocalhost(cookie) : cookie;
+        console.log("[SIGNIN] Original cookie:", cookie);
+        console.log("[SIGNIN] Fixed cookie:", fixedCookie);
+        redirectResponse.headers.append("Set-Cookie", fixedCookie);
       }
 
       return redirectResponse;
@@ -55,3 +49,15 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     return redirect("/login?error=oauth_failed", 302);
   }
 };
+
+/**
+ * Fix cookies for localhost by removing __Secure- prefix, Secure flag, and Partitioned.
+ * Partitioned cookies require Secure, so we must remove both.
+ */
+function fixCookieForLocalhost(cookie: string): string {
+  return cookie
+    .replace(/^__Secure-/i, "")
+    .replace(/;\s*Secure/gi, "")
+    .replace(/;\s*Partitioned/gi, "")
+    .replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
+}

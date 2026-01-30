@@ -1,45 +1,107 @@
 import { createAuthClient } from "@neondatabase/neon-js/auth";
 import type { AuthClient } from "@neondatabase/neon-js/auth";
+import { eq } from "drizzle-orm";
+
+export type User = {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+};
 
 /**
- * Get the auth URL - always use same-domain proxy.
- * The proxy is configured in netlify.toml for both dev and prod.
+ * Get the origin from request headers, respecting X-Forwarded-Proto for proxies.
  */
-function getAuthUrl(): string {
-  if (typeof window !== "undefined") {
-    return `${window.location.origin}/neon-auth`;
+export function getOrigin(request: Request): string {
+  const url = new URL(request.url);
+  const proto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
+  return `${proto}://${url.host}`;
+}
+
+/**
+ * Create an auth client for the given origin.
+ */
+export function createAuthClientForOrigin(origin: string): AuthClient {
+  return createAuthClient(`${origin}/neon-auth`);
+}
+
+/**
+ * Get the current user from the session, or null if not authenticated.
+ */
+export async function getUser(request: Request): Promise<User | null> {
+  const origin = getOrigin(request);
+  const authClient = createAuthClientForOrigin(origin);
+  const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
+
+  // Get cookies, fixing for Neon Auth if on localhost
+  let cookies = request.headers.get("cookie") || "";
+  if (isLocalhost) {
+    cookies = fixCookiesForNeonAuth(cookies);
   }
-  throw new Error("Use createAuthClientForServer for server-side usage");
-}
 
-// Lazy auth client for client-side use
-let _authClient: AuthClient | null = null;
+  try {
+    const session = await authClient.getSession({
+      fetchOptions: {
+        headers: { cookie: cookies },
+      },
+    });
 
-function getAuthClient(): AuthClient {
-  if (!_authClient) {
-    const authUrl = getAuthUrl();
-    console.log("[AUTH CLIENT] Creating client with URL:", authUrl);
-    _authClient = createAuthClient(authUrl);
+    if (!session?.data?.user) {
+      return null;
+    }
+
+    const user = session.data.user;
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name ?? null,
+      image: user.image ?? null,
+    };
+  } catch (error) {
+    console.error("[AUTH] Error getting session:", error);
+    return null;
   }
-  return _authClient;
 }
 
 /**
- * Create an auth client for server-side use with the request origin.
+ * Add __Secure- prefix back to cookies for Neon Auth (localhost only).
  */
-export function createAuthClientForServer(origin: string): AuthClient {
-  const authUrl = `${origin}/neon-auth`;
-  console.log("[AUTH CLIENT] Creating server client with URL:", authUrl);
-  return createAuthClient(authUrl);
+function fixCookiesForNeonAuth(cookieHeader: string): string {
+  const neonCookies = ["neon-auth.session_token", "neon-auth.session_challange"];
+
+  let fixed = cookieHeader;
+  for (const name of neonCookies) {
+    const regex = new RegExp(`(^|;\\s*)${name}=`, "g");
+    fixed = fixed.replace(regex, `$1__Secure-${name}=`);
+  }
+
+  return fixed;
 }
 
 /**
- * NeonAuth client for client-side use.
+ * Check if a user is in the approved_users table.
  */
-export const authClient = new Proxy({} as AuthClient, {
-  get(_, prop) {
-    return (getAuthClient() as Record<string | symbol, unknown>)[prop];
-  },
-});
+export async function isUserApproved(email: string): Promise<boolean> {
+  const { db, approvedUsers } = await import("../db");
 
-export type { Session, User } from "@neondatabase/neon-js/auth/types";
+  const [approvedUser] = await db
+    .select()
+    .from(approvedUsers)
+    .where(eq(approvedUsers.email, email))
+    .limit(1);
+
+  return !!approvedUser;
+}
+
+/**
+ * Get user and approval status. Returns null if not authenticated.
+ */
+export async function getUserWithApproval(
+  request: Request
+): Promise<{ user: User; isApproved: boolean } | null> {
+  const user = await getUser(request);
+  if (!user) return null;
+
+  const isApproved = await isUserApproved(user.email);
+  return { user, isApproved };
+}

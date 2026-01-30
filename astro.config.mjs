@@ -4,14 +4,10 @@ import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  adapter: netlify({
-    edgeMiddleware: true,
-  }),
+  output: "server",
+  adapter: netlify(),
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
-    server: {
-      allowedHosts: ["ddmvcnpnve.loclx.io"],
-    },
   },
 });

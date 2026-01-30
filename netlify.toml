@@ -3,5 +3,11 @@
   publish = "dist"
 
 [dev]
-  command = "npm run dev"
+  command = "astro dev"
   targetPort = 4321
+
+[[redirects]]
+  from = "/neon-auth/*"
+  to = "https://ep-solitary-violet-aelpmw2w.neonauth.c-2.us-east-2.aws.neon.tech/neondb/auth/:splat"
+  status = 200
+  force = true

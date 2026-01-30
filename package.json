@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "netlify dev --no-open",
+    "build": "astro build && npm run generate-redirects",
+    "generate-redirects": "node scripts/generate-redirects.js",
     "preview": "astro preview",
     "astro": "astro",
     "db:generate": "drizzle-kit generate",

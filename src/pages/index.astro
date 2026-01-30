@@ -5,6 +5,9 @@ import { Footer } from "../components/layout/Footer";
 import { Hero } from "../components/home/Hero";
 import { SaveTheDate } from "../components/home/SaveTheDate";
 
+// Server-render this page so middleware can access headers
+export const prerender = false;
+
 // User is guaranteed by middleware (this is a protected page)
 const user = Astro.locals.user;
 ---

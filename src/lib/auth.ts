@@ -1,28 +1,40 @@
 import { createAuthClient } from "@neondatabase/neon-js/auth";
 import type { AuthClient } from "@neondatabase/neon-js/auth";
 
-// Lazy auth client - only created when first used
+/**
+ * Get the auth URL - always use same-domain proxy.
+ * The proxy is configured in netlify.toml for both dev and prod.
+ */
+function getAuthUrl(): string {
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/neon-auth`;
+  }
+  throw new Error("Use createAuthClientForServer for server-side usage");
+}
+
+// Lazy auth client for client-side use
 let _authClient: AuthClient | null = null;
 
-/**
- * Get the NeonAuth client. Creates client on first call.
- * Throws if NEON_AUTH_URL is not set.
- */
 function getAuthClient(): AuthClient {
   if (!_authClient) {
-    const authUrl = import.meta.env.NEON_AUTH_URL;
-    console.log("[AUTH CLIENT] Creating auth client with URL:", authUrl);
-    if (!authUrl) {
-      throw new Error("NEON_AUTH_URL environment variable is not set");
-    }
+    const authUrl = getAuthUrl();
+    console.log("[AUTH CLIENT] Creating client with URL:", authUrl);
     _authClient = createAuthClient(authUrl);
   }
   return _authClient;
 }
 
 /**
- * NeonAuth client - connects to Neon's managed authentication service.
- * Configure OAuth providers (Google) in the Neon Console.
+ * Create an auth client for server-side use with the request origin.
+ */
+export function createAuthClientForServer(origin: string): AuthClient {
+  const authUrl = `${origin}/neon-auth`;
+  console.log("[AUTH CLIENT] Creating server client with URL:", authUrl);
+  return createAuthClient(authUrl);
+}
+
+/**
+ * NeonAuth client for client-side use.
  */
 export const authClient = new Proxy({} as AuthClient, {
   get(_, prop) {
@@ -30,5 +42,4 @@ export const authClient = new Proxy({} as AuthClient, {
   },
 });
 
-// Re-export types for convenience
 export type { Session, User } from "@neondatabase/neon-js/auth/types";

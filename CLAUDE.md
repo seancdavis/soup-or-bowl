@@ -4,50 +4,52 @@ This is the Soup or Bowl 2026 application - a Super Bowl party app with a soup c
 
 ## Current Status
 
-🚧 **Authentication In Progress** - The NeonAuth proxy is configured and requests are reaching Neon Auth, but the full OAuth flow needs debugging. Focus areas:
-1. Verify the response from Neon Auth contains the expected redirect URL
-2. Ensure cookies are being set correctly on the callback
-3. Test the full Google OAuth round-trip
+✅ **Authentication Working** - Server-side OAuth flow with NeonAuth is complete. Users can sign in with Google and are checked against the approved_users table.
 
 ## Project Overview
 
 - **Framework**: Astro with React islands
 - **Styling**: Tailwind CSS v4 with custom theme
 - **Database**: Netlify DB (Neon PostgreSQL) with Drizzle ORM
-- **Auth**: NeonAuth (Better Auth) with custom Astro proxy
-- **Hosting**: Netlify with edge middleware for auth
+- **Auth**: NeonAuth (Better Auth) with server-side OAuth flow
+- **Hosting**: Netlify with middleware for auth
 
 ## Key Architecture Decisions
 
-### Authentication (NeonAuth + Custom Proxy)
+### Authentication (Server-Side NeonAuth)
 
-NeonAuth is built on Better Auth and doesn't have a native Astro adapter. We use a custom proxy pattern:
+NeonAuth is proxied through Netlify redirects for first-party cookies. The entire OAuth flow is server-side with no client JavaScript required.
 
 **Key Files:**
-- `src/pages/api/auth/[...all].ts` - Proxies all `/api/auth/*` requests to Neon Auth service
-- `src/components/auth/LoginButton.tsx` - Triggers Google OAuth via POST
-- `src/lib/auth.ts` - NeonAuth client (lazy-loaded to avoid build-time issues)
+- `netlify.toml` - Configures `/neon-auth/*` proxy to Neon Auth service
+- `src/pages/api/auth/signin.ts` - Initiates OAuth, redirects to Google
+- `src/pages/api/auth/callback.ts` - Handles OAuth callback, finalizes session
+- `src/middleware.ts` - Validates session, redirects unauthenticated users
+- `src/lib/auth.ts` - NeonAuth client factory
 
-**OAuth Flow:**
-1. User clicks "Sign in with Google" button
-2. `LoginButton` sends `POST /api/auth/sign-in/social` with `{ provider: "google", callbackURL: "/" }`
-3. Auth proxy forwards to Neon Auth: `POST {NEON_AUTH_URL}/sign-in/social`
-4. Neon Auth returns `{ url: "https://accounts.google.com/..." }`
-5. Browser redirects to Google OAuth
-6. Google redirects back to `/api/auth/callback/google`
-7. Auth proxy forwards callback, receives Set-Cookie headers
-8. User is authenticated, session cookie is set
+**OAuth Flow (all server-side):**
+1. User clicks "Sign in with Google" link → GET `/api/auth/signin`
+2. Server calls Neon Auth, gets OAuth URL, forwards challenge cookie
+3. Server redirects browser to Google OAuth
+4. User authenticates with Google
+5. Google redirects to Neon Auth callback
+6. Neon Auth redirects to `/api/auth/callback?neon_auth_session_verifier=...`
+7. Server calls Neon Auth to finalize session, gets session cookies
+8. Server redirects to `/` with session cookies set
+9. Middleware validates session on subsequent requests
 
 **Auth Protection:**
-- All pages are protected except `/login` and `/api/auth/*`
-- Edge middleware (`src/middleware.ts`) handles all auth checks
+- All pages are protected except `/login`, `/neon-auth/*`, and `/api/auth/*`
+- Middleware (`src/middleware.ts`) validates sessions and sets `Astro.locals.user`
 - Users must be in the `approved_users` database table to access protected content
-- The middleware sets `Astro.locals.user` and `Astro.locals.isApproved`
+- Unapproved users are redirected to `/unauthorized`
+
+**Important:** Protected pages must use `export const prerender = false` so the middleware can access request headers.
 
 ### Rendering Strategy
-- Pages are static by default (pre-rendered at build time)
-- Netlify edge middleware protects static pages at runtime
-- API routes use `export const prerender = false` for SSR
+- Protected pages must be server-rendered (`prerender = false`)
+- Public pages can be static
+- API routes always use `export const prerender = false`
 - React components render statically unless using `client:load` directive
 
 ### Database
@@ -60,25 +62,10 @@ NeonAuth is built on Better Auth and doesn't have a native Astro adapter. We use
 
 ### Lazy Loading Pattern
 
-Both the database client (`src/db/index.ts`) and auth client (`src/lib/auth.ts`) use lazy loading with a Proxy pattern. This is critical because:
+Both the database client (`src/db/index.ts`) and auth client (`src/lib/auth.ts`) use lazy loading. This is critical because:
 1. Astro pre-renders pages at build time
 2. Environment variables may not be available at build time
 3. Database connections would fail during `npm run build`
-
-```typescript
-// Pattern used in src/db/index.ts
-let _db: NeonHttpDatabase<typeof schema> | null = null;
-export function getDb(): NeonHttpDatabase<typeof schema> {
-  if (!_db) {
-    _db = drizzle(neon(import.meta.env.NETLIFY_DATABASE_URL), { schema });
-  }
-  return _db;
-}
-// Proxy for convenient access
-export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
-  get(_, prop) { return (getDb() as any)[prop]; },
-});
-```
 
 ## Design System
 
@@ -106,6 +93,7 @@ export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
 ### Pages (`src/pages/`)
 - `.astro` files for pages
 - Use `Layout.astro` as the wrapper
+- Protected pages must include `export const prerender = false`
 - Protected pages can assume `Astro.locals.user` exists (middleware enforces)
 
 **Current Pages:**
@@ -113,7 +101,9 @@ export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
 |-------|------|-----------|-------------|
 | `/` | `index.astro` | Yes | Home page with Hero and SaveTheDate |
 | `/login` | `login.astro` | No | Public login page (entry point) |
-| `/api/auth/*` | `api/auth/[...all].ts` | No | Auth proxy to Neon Auth |
+| `/unauthorized` | `unauthorized.astro` | Auth only | Shown to unapproved users |
+| `/api/auth/signin` | `api/auth/signin.ts` | No | Initiates Google OAuth |
+| `/api/auth/callback` | `api/auth/callback.ts` | No | Handles OAuth callback |
 
 ### API Routes (`src/pages/api/`)
 - Must include `export const prerender = false`
@@ -126,10 +116,11 @@ export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
 
 ## Common Tasks
 
-### Adding a new page
+### Adding a new protected page
 1. Create `src/pages/your-page.astro`
-2. Import and use `Layout` from `../layouts/Layout.astro`
-3. Access user via `Astro.locals.user` (guaranteed by middleware)
+2. Add `export const prerender = false` in frontmatter
+3. Import and use `Layout` from `../layouts/Layout.astro`
+4. Access user via `Astro.locals.user` (guaranteed by middleware)
 
 ### Adding a new component
 1. Create in appropriate `src/components/{category}/` folder
@@ -151,35 +142,24 @@ export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
 
 Required in production:
 - `NETLIFY_DATABASE_URL` - Neon PostgreSQL connection string (auto-provisioned by Netlify DB)
-- `NEON_AUTH_URL` - NeonAuth endpoint URL (from Neon Console > Auth tab, e.g., `https://auth.neon.tech/project/xxx`)
+- `NEON_AUTH_URL` - NeonAuth endpoint URL (from Neon Console > Auth tab)
 
 `NETLIFY_DATABASE_URL` is automatically set after running `netlify db init`.
 
-## Debugging Auth
+**Note:** The `NEON_AUTH_URL` is currently hard-coded in `netlify.toml` for the redirect proxy. For production, use the `scripts/generate-redirects.js` script to generate the `_redirects` file at build time with the correct URL.
 
-The auth proxy logs useful information:
-```
-[AUTH PROXY] Request: POST sign-in/social
-[AUTH PROXY] Base URL: https://auth.neon.tech/project/xxx
-[AUTH PROXY] Forwarding to: https://auth.neon.tech/project/xxx/sign-in/social
-[AUTH PROXY] Response status: 200
-```
+## Development
 
-**Common Issues:**
-1. **404 on sign-in**: Make sure you're using POST to `/sign-in/social` with `{ provider: "google" }` body, not GET to `/sign-in/google`
-2. **No redirect URL in response**: Check Neon Console > Auth tab - Google provider must be enabled and domains configured
-3. **Cookies not being set**: The proxy must forward Set-Cookie headers from the response
-4. **Session not persisting**: Check that cookies include correct domain/path attributes
+### Local HTTPS (Required for Auth)
+NeonAuth uses `__Secure-` cookies which require HTTPS. For local development:
+1. Use a tunnel service (e.g., localtunnel, loclx, ngrok)
+2. Add the tunnel domain to `vite.server.allowedHosts` in `astro.config.mjs`
+3. Add the tunnel domain to Neon Auth trusted domains in the Neon Console
 
-**NeonAuth Console Settings (Required):**
-- Auth enabled for your project
-- Google OAuth provider configured with client ID/secret
-- Trusted domains: `localhost:8888` (dev), your production domain
-
-## Commands
+### Commands
 
 ```bash
-npm run dev          # Start dev server
+npm run dev          # Start dev server (via netlify dev)
 npm run build        # Production build
 npm run db:generate  # Generate migrations from schema
 npm run db:migrate   # Apply migrations to database

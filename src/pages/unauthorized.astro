@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { Card } from "../components/ui/Card";
-import { Button } from "../components/ui/Button";
+import { SignOutButton } from "../components/auth";
 
 const user = Astro.locals.user;
 ---
@@ -54,11 +54,7 @@ const user = Astro.locals.user;
 
         {/* Actions */}
         <div class="flex flex-col gap-3">
-          <a href="/api/auth/sign-out">
-            <Button variant="secondary" className="w-full">
-              Sign out
-            </Button>
-          </a>
+          <SignOutButton client:load className="w-full" />
           <a
             href="mailto:?subject=Soup or Bowl 2026 Access Request"
             class="text-gold-400 hover:text-gold-300 text-sm underline underline-offset-2"

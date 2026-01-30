@@ -10,5 +10,8 @@ export default defineConfig({
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      allowedHosts: ["ddmvcnpnve.loclx.io"],
+    },
   },
 });

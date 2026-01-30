@@ -4,7 +4,7 @@ interface LoginButtonProps {
   className?: string;
 }
 
-// Google "G" logo - white version for dark/gold backgrounds
+// Google "G" logo
 function GoogleIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -29,45 +29,12 @@ function GoogleIcon() {
 }
 
 export function LoginButton({ className = "" }: LoginButtonProps) {
-  const handleLogin = async () => {
-    try {
-      // POST to sign-in/social endpoint with provider
-      const response = await fetch("/api/auth/sign-in/social", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          provider: "google",
-          callbackURL: "/",
-        }),
-      });
-
-      const data = await response.json();
-      console.log("[LoginButton] Response:", data);
-
-      // Better Auth returns a redirect URL for OAuth
-      if (data.url) {
-        window.location.href = data.url;
-      } else if (data.redirect) {
-        window.location.href = data.redirect;
-      } else {
-        console.error("[LoginButton] No redirect URL in response:", data);
-      }
-    } catch (error) {
-      console.error("[LoginButton] Error:", error);
-    }
-  };
-
   return (
-    <Button
-      variant="primary"
-      size="lg"
-      onClick={handleLogin}
-      className={className}
-    >
-      <GoogleIcon />
-      Sign in with Google
-    </Button>
+    <a href="/api/auth/signin">
+      <Button variant="primary" size="lg" className={className}>
+        <GoogleIcon />
+        Sign in with Google
+      </Button>
+    </a>
   );
 }

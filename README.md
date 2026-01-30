@@ -5,7 +5,7 @@ A Super Bowl party application that doubles as a soup competition (like a chili 
 ## Features
 
 - **Save the Date** - Landing page for authenticated users
-- **User Authentication** - Google OAuth via NeonAuth
+- **User Authentication** - Google OAuth via NeonAuth (custom proxy for Astro)
 - **Approved User Safelist** - Only pre-approved participants can access
 - **Coming Soon**: Soup submission, voting, and Super Bowl Squares
 
@@ -18,8 +18,12 @@ A Super Bowl party application that doubles as a soup competition (like a chili 
 | [Tailwind CSS v4](https://tailwindcss.com) | Styling |
 | [Netlify](https://netlify.com) | Hosting with edge middleware |
 | [Netlify DB](https://docs.netlify.com/database/) | PostgreSQL database (Neon) |
-| [NeonAuth](https://neon.tech/docs/auth) | Authentication |
+| [NeonAuth](https://neon.tech/docs/auth) | Authentication (Better Auth backend) |
 | [Drizzle ORM](https://orm.drizzle.team) | Database schema and queries |
+
+## Current Status
+
+🚧 **Authentication In Progress** - The NeonAuth proxy is configured and connecting to Neon Auth, but the full OAuth flow needs debugging. The proxy pattern is working (requests reach Neon Auth), but there may be issues with the response handling or callback flow.
 
 ## Getting Started
 
@@ -113,12 +117,34 @@ NEON_AUTH_URL=https://your-project.auth.neon.tech
 
 ## Authentication Flow
 
+### Overview
 1. User visits any page → Edge middleware intercepts
 2. Check NeonAuth session
 3. No session → Redirect to `/login`
 4. Has session → Check `approved_users` table
 5. Not approved → Redirect to `/unauthorized`
 6. Approved → Serve the page
+
+### NeonAuth Integration (Custom Proxy)
+
+NeonAuth doesn't have a native Astro adapter, so we use a custom proxy pattern:
+
+```
+LoginButton (React)
+    → POST /api/auth/sign-in/social { provider: "google", callbackURL: "/" }
+    → Auth Proxy ([...all].ts)
+    → Neon Auth service (NEON_AUTH_URL)
+    → Returns { url: "https://accounts.google.com/..." }
+    → Redirect to Google OAuth
+    → Google callback → Neon Auth → /api/auth/callback/google
+    → Auth Proxy forwards response with Set-Cookie headers
+    → User authenticated
+```
+
+Key files:
+- `src/pages/api/auth/[...all].ts` - Proxies all `/api/auth/*` requests to Neon Auth
+- `src/components/auth/LoginButton.tsx` - Triggers OAuth via POST to `/sign-in/social`
+- `src/lib/auth.ts` - NeonAuth client for session management
 
 ## Design System
 

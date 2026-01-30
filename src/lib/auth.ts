@@ -11,6 +11,7 @@ let _authClient: AuthClient | null = null;
 function getAuthClient(): AuthClient {
   if (!_authClient) {
     const authUrl = import.meta.env.NEON_AUTH_URL;
+    console.log("[AUTH CLIENT] Creating auth client with URL:", authUrl);
     if (!authUrl) {
       throw new Error("NEON_AUTH_URL environment variable is not set");
     }

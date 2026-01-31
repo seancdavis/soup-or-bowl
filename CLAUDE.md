@@ -8,6 +8,7 @@ This is the Soup or Bowl 2026 application - a Super Bowl party app with a soup c
 - **Styling**: Tailwind CSS v4 with custom theme
 - **Database**: Netlify DB (Neon PostgreSQL) with Drizzle ORM
 - **Auth**: NeonAuth (Better Auth) with server-side OAuth flow
+- **Icons**: Lucide React
 - **Hosting**: Netlify
 
 ## Architecture Principles
@@ -64,6 +65,7 @@ All components are React components. Astro pages act as thin controllers:
 **Astro pages should NOT:**
 - Contain significant markup
 - Have complex JSX structures
+- Use `client:load` on entire page components (defeats Astro's purpose)
 
 **Pattern:**
 ```astro
@@ -84,6 +86,13 @@ const { user } = auth;
   <SomePage user={user} />
 </Layout>
 ```
+
+### 4. Minimal Client-Side JavaScript
+
+Prefer CSS-only solutions over JavaScript where possible:
+- Use `<details>`/`<summary>` for dropdowns instead of React state
+- Use CSS `:hover`, `:focus-within` for interactive states
+- Only use `client:load` on specific islands that truly need interactivity
 
 ## Key Architecture Decisions
 
@@ -110,6 +119,8 @@ All auth is server-side. No client-side auth SDK.
 
 **Sign out:** Link to `/api/auth/signout` (no client-side JS needed)
 
+**Important:** The `getUser` function uses direct fetch with `disableCookieCache=true` to bypass Neon Auth's session caching. This ensures sign-out works correctly.
+
 **Localhost Cookie Handling:**
 NeonAuth uses `__Secure-` cookies which require HTTPS. For localhost development, the auth routes automatically handle cookie prefix conversion.
 
@@ -118,6 +129,34 @@ NeonAuth uses `__Secure-` cookies which require HTTPS. For localhost development
 - Schema defined in `db/schema.ts`
 - Database client in `src/db/index.ts` (lazy-loaded)
 - Run `npm run db:generate` then `npm run db:migrate` for schema changes
+
+### Logging
+
+Use the logger utility (`src/lib/logger.ts`) for all server-side logging:
+
+```typescript
+import { logger } from "../lib/logger";
+
+// Direct usage with scope
+logger.debug("AUTH", "Checking session...");
+logger.info("DB", "Connected to database");
+logger.warn("CACHE", "Cache miss");
+logger.error("API", "Request failed:", error);
+
+// Or create a scoped logger
+const log = logger.scope("AUTH");
+log.debug("Checking session...");
+log.info("User authenticated:", user.email);
+```
+
+**Log Levels** (controlled via `LOG_LEVEL` env var):
+- `debug` - Most verbose, shows everything
+- `info` - General information (default)
+- `warn` - Warnings and errors only
+- `error` - Errors only
+- `silent` - No output
+
+**Colors:** Disable with `LOG_COLORS=false`
 
 ## Design System
 
@@ -147,7 +186,17 @@ NeonAuth uses `__Secure-` cookies which require HTTPS. For localhost development
 | `Icon` | `ui/` | SVG icons (trophy, warning, football) |
 | `Logo` | `ui/` | Soup or Bowl logo in multiple sizes |
 | `EventBadge` | `ui/` | "Super Bowl LX" badge with decorative lines |
-| `PageBackground` | `ui/` | Hero, simple, minimal background variants |
+| `PageBackground` | `ui/` | Hero, simple, minimal background variants (use `pointer-events-none`) |
+
+### Icons
+
+Use [Lucide React](https://lucide.dev) for icons:
+
+```tsx
+import { LogOut, User, Settings } from "lucide-react";
+
+<LogOut className="w-4 h-4" />
+```
 
 ## File Conventions
 
@@ -156,22 +205,30 @@ NeonAuth uses `__Secure-` cookies which require HTTPS. For localhost development
 |-------|------|------|-------------|
 | `/` | `index.astro` | Required + Approved | Home page |
 | `/login` | `login.astro` | None (redirects if logged in) | Login page |
-| `/unauthorized` | `unauthorized.astro` | Required | Unapproved users |
+| `/unauthorized` | `unauthorized.astro` | Required (redirects if approved) | Unapproved users |
 | `/api/auth/signin` | `api/auth/signin.ts` | None | Start OAuth |
 | `/api/auth/callback` | `api/auth/callback.ts` | None | OAuth callback |
 | `/api/auth/signout` | `api/auth/signout.ts` | None | Sign out |
 
 ## Environment Variables
 
-- `NETLIFY_DATABASE_URL` - Neon PostgreSQL connection string (auto-set by Netlify DB)
-- `NEON_AUTH_URL` - NeonAuth endpoint (currently hard-coded in `netlify.toml`)
+| Variable | Description |
+|----------|-------------|
+| `NETLIFY_DATABASE_URL` | Neon PostgreSQL connection string (auto-set by Netlify DB) |
+| `NEON_AUTH_URL` | NeonAuth endpoint (hard-coded in `netlify.toml`) |
+| `LOG_LEVEL` | Logger level: `debug`, `info`, `warn`, `error`, `silent` (default: `info`) |
+| `LOG_COLORS` | Enable/disable colored logs: `true`/`false` (default: `true`) |
 
 ## Commands
 
 ```bash
-npm run dev          # Start dev server (netlify dev)
-npm run build        # Production build
-npm run db:generate  # Generate migrations
-npm run db:migrate   # Apply migrations
-npm run db:studio    # Open Drizzle Studio
+npm run dev                    # Start dev server (netlify dev)
+npm run build                  # Production build
+npm run db:generate            # Generate migrations
+npm run db:migrate             # Apply migrations
+npm run db:studio              # Open Drizzle Studio
+
+# With logging options
+LOG_LEVEL=debug npm run dev    # Verbose logging
+LOG_LEVEL=silent npm run dev   # No logging
 ```

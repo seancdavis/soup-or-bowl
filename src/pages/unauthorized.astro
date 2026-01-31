@@ -1,14 +1,21 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { UnauthorizedPage } from "../components/pages";
-import { getUser } from "../lib/auth";
+import { getUserWithApproval } from "../lib/auth";
 
-const user = await getUser(Astro.request);
+const auth = await getUserWithApproval(Astro.request);
 
 // Must be logged in to see this page
-if (!user) {
+if (!auth) {
   return Astro.redirect("/login");
 }
+
+// Approved users should go to home
+if (auth.isApproved) {
+  return Astro.redirect("/");
+}
+
+const { user } = auth;
 ---
 
 <Layout title="Not Authorized - Soup or Bowl 2026">

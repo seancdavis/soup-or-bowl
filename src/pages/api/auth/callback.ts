@@ -1,5 +1,8 @@
 import type { APIRoute } from "astro";
 import { getOrigin } from "../../../lib/auth";
+import { logger } from "../../../lib/logger";
+
+const log = logger.scope("CALLBACK");
 
 /**
  * OAuth callback handler.
@@ -14,17 +17,18 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
 
   if (!verifier) {
+    log.warn("No verifier in callback, redirecting to login");
     return redirect("/login", 302);
   }
 
   try {
     // Get cookies from request - may need to add __Secure- prefix back for Neon Auth
     let cookies = request.headers.get("cookie") || "";
-    console.log("[CALLBACK] Original cookies:", cookies.substring(0, 100) || "(none)");
+    log.debug("Original cookies:", cookies.substring(0, 100) || "(none)");
 
     if (isLocalhost) {
       cookies = fixCookiesForNeonAuth(cookies);
-      console.log("[CALLBACK] Fixed cookies:", cookies.substring(0, 100));
+      log.debug("Fixed cookies:", cookies.substring(0, 100));
     }
 
     // Call Neon Auth to finalize the session
@@ -41,7 +45,7 @@ export const GET: APIRoute = async ({ request, redirect }) => {
 
     if (!sessionResponse.ok) {
       const error = await sessionResponse.text();
-      console.error("[CALLBACK] Session error:", error);
+      log.error("Session error:", error);
       return redirect("/login?error=session_failed", 302);
     }
 
@@ -49,14 +53,18 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     const response = redirect(destination, 302);
 
     // Forward cookies, fixing for localhost if needed
-    for (const cookie of sessionResponse.headers.getSetCookie()) {
+    const setCookies = sessionResponse.headers.getSetCookie();
+    log.debug("Setting", setCookies.length, "cookies");
+
+    for (const cookie of setCookies) {
       const fixedCookie = isLocalhost ? fixCookieForLocalhost(cookie) : cookie;
       response.headers.append("Set-Cookie", fixedCookie);
     }
 
+    log.info("Session established, redirecting to", destination);
     return response;
   } catch (error) {
-    console.error("[CALLBACK] Error:", error);
+    log.error("Error:", error);
     return redirect("/login?error=callback_failed", 302);
   }
 };

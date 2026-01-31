@@ -1,6 +1,9 @@
 import { createAuthClient } from "@neondatabase/neon-js/auth";
 import type { AuthClient } from "@neondatabase/neon-js/auth";
 import { eq } from "drizzle-orm";
+import { logger } from "./logger";
+
+const log = logger.scope("AUTH");
 
 export type User = {
   id: string;
@@ -40,9 +43,9 @@ export async function getUser(request: Request): Promise<User | null> {
     cookies = fixCookiesForNeonAuth(cookies);
   }
 
-  console.log("[AUTH] getUser called");
-  console.log("[AUTH] Raw cookies:", rawCookies ? rawCookies.substring(0, 100) : "(none)");
-  console.log("[AUTH] Fixed cookies:", cookies ? cookies.substring(0, 100) : "(none)");
+  log.debug("getUser called");
+  log.debug("Raw cookies:", rawCookies ? rawCookies.substring(0, 100) : "(none)");
+  log.debug("Fixed cookies:", cookies ? cookies.substring(0, 100) : "(none)");
 
   try {
     // Direct fetch to bypass client caching
@@ -56,12 +59,12 @@ export async function getUser(request: Request): Promise<User | null> {
     });
 
     if (!response.ok) {
-      console.log("[AUTH] Session response not ok:", response.status);
+      log.debug("Session response not ok:", response.status);
       return null;
     }
 
     const data = await response.json();
-    console.log("[AUTH] Session response:", data?.user ? `User: ${data.user.email}` : "No user");
+    log.debug("Session response:", data?.user ? `User: ${data.user.email}` : "No user");
 
     if (!data?.user) {
       return null;
@@ -75,7 +78,7 @@ export async function getUser(request: Request): Promise<User | null> {
       image: user.image ?? null,
     };
   } catch (error) {
-    console.error("[AUTH] Error getting session:", error);
+    log.error("Error getting session:", error);
     return null;
   }
 }

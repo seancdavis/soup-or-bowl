@@ -1,5 +1,8 @@
 import type { APIRoute } from "astro";
 import { getOrigin } from "../../../lib/auth";
+import { logger } from "../../../lib/logger";
+
+const log = logger.scope("SIGNOUT");
 
 /**
  * Signs out the user by clearing session cookies.
@@ -8,6 +11,9 @@ import { getOrigin } from "../../../lib/auth";
 export const GET: APIRoute = async ({ request, redirect }) => {
   const origin = getOrigin(request);
   const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
+
+  log.info("Signing out user");
+  log.debug("Environment:", isLocalhost ? "localhost" : "production");
 
   // Redirect to login and clear session cookies
   const redirectResponse = redirect("/login", 302);
@@ -35,5 +41,6 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     );
   }
 
+  log.debug("Cookies cleared, redirecting to /login");
   return redirectResponse;
 };

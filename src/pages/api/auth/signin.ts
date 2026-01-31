@@ -1,5 +1,8 @@
 import type { APIRoute } from "astro";
 import { getOrigin } from "../../../lib/auth";
+import { logger } from "../../../lib/logger";
+
+const log = logger.scope("SIGNIN");
 
 /**
  * Initiates Google OAuth sign-in.
@@ -30,22 +33,23 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       // Forward challenge cookie from Neon Auth, fixing for localhost if needed
       const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
       const setCookies = response.headers.getSetCookie();
-      console.log("[SIGNIN] Cookies from Neon Auth:", setCookies.length);
+      log.debug("Cookies from Neon Auth:", setCookies.length);
 
       for (const cookie of setCookies) {
         const fixedCookie = isLocalhost ? fixCookieForLocalhost(cookie) : cookie;
-        console.log("[SIGNIN] Original cookie:", cookie);
-        console.log("[SIGNIN] Fixed cookie:", fixedCookie);
+        log.debug("Original cookie:", cookie.substring(0, 80));
+        log.debug("Fixed cookie:", fixedCookie.substring(0, 80));
         redirectResponse.headers.append("Set-Cookie", fixedCookie);
       }
 
+      log.info("Redirecting to OAuth provider");
       return redirectResponse;
     }
 
-    console.error("[SIGNIN] No redirect URL in response:", data);
+    log.error("No redirect URL in response:", data);
     return redirect("/login?error=oauth_failed", 302);
   } catch (error) {
-    console.error("[SIGNIN] Error:", error);
+    log.error("Error:", error);
     return redirect("/login?error=oauth_failed", 302);
   }
 };

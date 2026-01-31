@@ -1,4 +1,5 @@
-import { PageBackground, Card, Icon, EventBadge, Logo } from "../ui";
+import { TriangleAlert } from "lucide-react";
+import { PageBackground, Card, EventBadge, Logo } from "../ui";
 import { SignOutButton } from "../auth";
 
 interface UnauthorizedPageProps {
@@ -23,7 +24,7 @@ export function UnauthorizedPage({ email }: UnauthorizedPageProps) {
         <Card variant="bordered" className="text-center">
           {/* Icon */}
           <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
-            <Icon name="warning" className="w-8 h-8 text-red-400" />
+            <TriangleAlert className="w-8 h-8 text-red-400" />
           </div>
 
           <h1 className="text-2xl font-bold text-white mb-2">

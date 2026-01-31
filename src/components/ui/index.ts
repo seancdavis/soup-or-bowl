@@ -6,6 +6,5 @@ export { Container } from "./Container";
 export { Divider } from "./Divider";
 export { EventBadge } from "./EventBadge";
 export { HeroBrand } from "./HeroBrand";
-export { Icon } from "./Icon";
 export { Logo } from "./Logo";
 export { PageBackground } from "./PageBackground";

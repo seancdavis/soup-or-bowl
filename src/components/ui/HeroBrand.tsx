@@ -1,7 +1,7 @@
+import { Trophy } from "lucide-react";
 import { EventBadge } from "./EventBadge";
 import { Logo } from "./Logo";
 import { Divider } from "./Divider";
-import { Icon } from "./Icon";
 
 type HeroBrandSize = "sm" | "md" | "lg";
 
@@ -76,7 +76,7 @@ export function HeroBrand({
       {showTrophy && (
         <div className={size === "lg" ? "my-10" : "my-6"}>
           <Divider>
-            <Icon name="trophy" className={size === "lg" ? "w-8 h-8 text-gold-500" : "w-6 h-6 text-gold-500"} />
+            <Trophy className={size === "lg" ? "w-8 h-8 text-gold-500" : "w-6 h-6 text-gold-500"} />
           </Divider>
         </div>
       )}

@@ -1,4 +1,4 @@
-import { PageBackground, Card, Icon } from "../ui";
+import { PageBackground, Card, Icon, EventBadge, Logo } from "../ui";
 import { SignOutButton } from "../auth";
 
 interface UnauthorizedPageProps {
@@ -7,8 +7,16 @@ interface UnauthorizedPageProps {
 
 export function UnauthorizedPage({ email }: UnauthorizedPageProps) {
   return (
-    <main className="relative min-h-screen flex items-center justify-center px-4">
-      <PageBackground variant="minimal" />
+    <main className="relative min-h-screen flex flex-col items-center justify-center px-4 py-12">
+      <PageBackground variant="simple" />
+
+      {/* Branding at top */}
+      <div className="relative z-10 mb-8 text-center">
+        <EventBadge />
+        <div className="mt-6">
+          <Logo size="md" />
+        </div>
+      </div>
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-md">

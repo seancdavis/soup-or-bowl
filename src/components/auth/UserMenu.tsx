@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Avatar } from "../ui";
 
 interface UserMenuProps {
   user: {
@@ -19,17 +20,7 @@ export function UserMenu({ user }: UserMenuProps) {
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        {user.image ? (
-          <img
-            src={user.image}
-            alt={user.name || "User"}
-            className="w-9 h-9 rounded-full border-2 border-gold-500/50"
-          />
-        ) : (
-          <div className="w-9 h-9 rounded-full bg-primary-700 flex items-center justify-center text-sm font-medium text-white border-2 border-gold-500/50">
-            {(user.name || user.email)[0].toUpperCase()}
-          </div>
-        )}
+        <Avatar src={user.image} name={user.name} email={user.email} />
       </button>
 
       {isOpen && (

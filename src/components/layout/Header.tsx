@@ -1,4 +1,4 @@
-import { Container } from "../ui/Container";
+import { Container, Avatar, Logo } from "../ui";
 
 interface HeaderProps {
   user?: {
@@ -15,9 +15,9 @@ export function Header({ user }: HeaderProps) {
         <div className="flex items-center justify-between h-16">
           <a
             href="/"
-            className="font-[family-name:var(--font-family-display)] text-xl text-white tracking-tight hover:text-gold-400 transition-colors"
+            className="hover:text-gold-400 transition-colors"
           >
-            SOUP<span className="text-gold-500">or</span>BOWL
+            <Logo size="sm" />
           </a>
 
           {user && (
@@ -25,17 +25,12 @@ export function Header({ user }: HeaderProps) {
               <span className="text-sm text-primary-300 hidden sm:block">
                 {user.name || user.email}
               </span>
-              {user.image ? (
-                <img
-                  src={user.image}
-                  alt={user.name || "User"}
-                  className="w-8 h-8 rounded-full border-2 border-gold-500/50"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center text-sm font-medium text-white">
-                  {(user.name || user.email)[0].toUpperCase()}
-                </div>
-              )}
+              <Avatar
+                src={user.image}
+                name={user.name}
+                email={user.email}
+                size="sm"
+              />
             </div>
           )}
         </div>

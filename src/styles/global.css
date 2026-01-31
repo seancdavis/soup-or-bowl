@@ -24,10 +24,48 @@
   --font-family-display: "Impact", "Haettenschweiler", "Arial Narrow Bold",
     sans-serif;
   --font-family-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Custom animations */
+  --animate-fade-in: fade-in 0.8s ease-out;
+  --animate-fade-in-up: fade-in-up 0.6s ease-out;
+  --animate-fade-in-down: fade-in-down 0.8s ease-out;
+}
+
+/* Keyframe animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Custom utility classes */
 @layer utilities {
+  /* Text shadows */
   .text-shadow-bold {
     text-shadow:
       2px 2px 0 rgba(0, 0, 0, 0.3),
@@ -38,6 +76,103 @@
     text-shadow:
       0 0 20px currentColor,
       0 0 40px currentColor;
+  }
+
+  .text-shadow-title {
+    text-shadow:
+      0 0 80px rgba(212, 165, 0, 0.3),
+      4px 4px 0 var(--color-primary-900),
+      8px 8px 0 var(--color-primary-950);
+  }
+
+  .text-shadow-title-sm {
+    text-shadow:
+      0 0 80px rgba(212, 165, 0, 0.3),
+      4px 4px 0 var(--color-primary-900);
+  }
+
+  .text-shadow-gold-glow {
+    text-shadow: 0 0 40px var(--color-gold-500);
+  }
+
+  .text-shadow-year {
+    text-shadow:
+      0 0 60px var(--color-gold-500),
+      2px 2px 0 var(--color-primary-900);
+  }
+
+  .text-shadow-heading {
+    text-shadow: 2px 2px 0 var(--color-primary-900);
+  }
+
+  .text-shadow-subtle {
+    text-shadow: 0 0 30px rgba(212, 165, 0, 0.2);
+  }
+
+  /* Background effects */
+  .bg-stadium-lights {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, var(--color-gold-500) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 20% 0%, var(--color-gold-400) 0%, transparent 40%),
+      radial-gradient(ellipse 60% 40% at 80% 0%, var(--color-gold-400) 0%, transparent 40%);
+  }
+
+  .bg-diagonal-stripes {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 40px,
+      var(--color-gold-500) 40px,
+      var(--color-gold-500) 42px
+    );
+  }
+
+  .bg-yard-lines {
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 60px,
+      var(--color-gold-500) 60px,
+      var(--color-gold-500) 62px
+    );
+  }
+
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  .bg-vignette {
+    background: radial-gradient(ellipse at center, transparent 0%, var(--color-primary-950) 70%);
+  }
+
+  .bg-vignette-subtle {
+    background: radial-gradient(ellipse at center, var(--color-primary-900) 0%, var(--color-primary-950) 70%);
+  }
+
+  /* Animation delays for staggered effects */
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+    animation-fill-mode: both;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+    animation-fill-mode: both;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 0.5s;
+    animation-fill-mode: both;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 0.6s;
+    animation-fill-mode: both;
+  }
+
+  /* Display font utility */
+  .font-display {
+    font-family: var(--font-family-display);
   }
 }
 

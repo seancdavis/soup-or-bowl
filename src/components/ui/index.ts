@@ -1,3 +1,10 @@
+export { Avatar } from "./Avatar";
+export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { Card } from "./Card";
 export { Container } from "./Container";
+export { Divider } from "./Divider";
+export { EventBadge } from "./EventBadge";
+export { Icon } from "./Icon";
+export { Logo } from "./Logo";
+export { PageBackground } from "./PageBackground";

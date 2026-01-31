@@ -1,9 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { Header } from "../components/layout/Header";
-import { Footer } from "../components/layout/Footer";
-import { Hero } from "../components/home/Hero";
-import { SaveTheDate } from "../components/home/SaveTheDate";
+import { HomePage } from "../components/pages";
 import { getUserWithApproval } from "../lib/auth";
 
 const auth = await getUserWithApproval(Astro.request);
@@ -20,12 +17,5 @@ const { user } = auth;
 ---
 
 <Layout title="Soup or Bowl 2026 - Save the Date">
-  <Header user={user} />
-
-  <main class="pt-16">
-    <Hero />
-    <SaveTheDate />
-  </main>
-
-  <Footer />
+  <HomePage user={user} />
 </Layout>

@@ -5,6 +5,7 @@ export { Card } from "./Card";
 export { Container } from "./Container";
 export { Divider } from "./Divider";
 export { EventBadge } from "./EventBadge";
+export { FootballIcon } from "./FootballIcon";
 export { HeroBrand } from "./HeroBrand";
 export { Logo } from "./Logo";
 export { PageBackground } from "./PageBackground";

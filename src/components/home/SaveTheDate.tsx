@@ -1,4 +1,4 @@
-import { Card, Badge, Divider } from "../ui";
+import { Card, Badge, Divider, FootballIcon } from "../ui";
 
 export function SaveTheDate() {
   // Super Bowl LX is February 8, 2026
@@ -14,20 +14,7 @@ export function SaveTheDate() {
 
   return (
     <section className="relative py-24 md:py-32 overflow-hidden">
-      {/* Subtle background pattern - yard lines */}
-      <div className="absolute inset-0 opacity-[0.02] bg-yard-lines" />
-
       <div className="relative z-10 max-w-4xl mx-auto px-4">
-        {/* Section header */}
-        <div className="text-center mb-12">
-          <Badge variant="outlined" className="mb-4">
-            Mark Your Calendar
-          </Badge>
-          <h2 className="font-display text-4xl md:text-6xl uppercase text-white tracking-tight text-shadow-heading">
-            Save the Date
-          </h2>
-        </div>
-
         {/* Date card - ticket style */}
         <Card
           variant="bordered"
@@ -59,7 +46,7 @@ export function SaveTheDate() {
             {/* Divider */}
             <div className="my-8">
               <Divider lineClassName="bg-gradient-to-r from-transparent to-primary-700">
-                <span className="text-gold-500 text-2xl">🏈</span>
+                <FootballIcon className="w-6 h-6 text-gold-500" />
               </Divider>
             </div>
 
@@ -80,11 +67,6 @@ export function SaveTheDate() {
             </div>
           </div>
         </Card>
-
-        {/* Bottom teaser */}
-        <p className="text-center mt-8 text-primary-500 text-sm">
-          Invitations will be sent to approved participants
-        </p>
       </div>
     </section>
   );

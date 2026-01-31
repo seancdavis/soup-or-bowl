@@ -12,13 +12,8 @@ export function Hero() {
         </div>
 
         {/* Tagline */}
-        <p className="text-xl md:text-2xl text-primary-200 font-light tracking-wide text-center animate-fade-in-up animation-delay-500">
-          The Ultimate Championship Showdown
-        </p>
-
-        {/* Subtitle */}
-        <p className="mt-3 text-primary-400 text-sm md:text-base tracking-widest uppercase text-center animate-fade-in-up animation-delay-600">
-          Where Culinary Champions Are Crowned
+        <p className="text-lg md:text-xl text-primary-300 font-light tracking-wide text-center max-w-lg mx-auto animate-fade-in-up animation-delay-500">
+          The quest for the Golden Ladle Award and $100 in completely random prize money
         </p>
       </div>
 

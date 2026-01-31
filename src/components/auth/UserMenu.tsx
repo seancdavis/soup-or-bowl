@@ -1,3 +1,4 @@
+import { LogOut } from "lucide-react";
 import { Avatar } from "../ui";
 
 interface UserMenuProps {
@@ -10,25 +11,34 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   return (
-    <details className="relative group">
-      <summary className="flex items-center gap-2 p-1 rounded-full hover:bg-white/10 transition-colors cursor-pointer list-none">
+    <details className="relative">
+      <summary className="flex items-center p-0.5 rounded-full ring-2 ring-transparent hover:ring-gold-500/30 transition-all duration-200 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
         <Avatar src={user.image} name={user.name} email={user.email} />
       </summary>
 
-      {/* Dropdown */}
-      <div className="absolute right-0 mt-2 w-56 bg-primary-800 border border-primary-700 rounded-lg shadow-xl py-2">
-        <div className="px-4 py-2 border-b border-primary-700">
-          <p className="font-medium text-white truncate">
+      {/* Dropdown panel */}
+      <div className="absolute right-0 mt-3 w-64 bg-primary-900/95 backdrop-blur-sm border border-primary-700/80 rounded-xl shadow-2xl shadow-black/40 overflow-hidden">
+        {/* Gold accent line at top */}
+        <div className="h-0.5 bg-gradient-to-r from-gold-500/0 via-gold-500 to-gold-500/0" />
+
+        {/* User info section */}
+        <div className="px-5 py-4">
+          <p className="font-semibold text-white truncate leading-tight">
             {user.name || "User"}
           </p>
-          <p className="text-sm text-primary-400 truncate">{user.email}</p>
+          <p className="text-sm text-primary-400 truncate mt-0.5">{user.email}</p>
         </div>
 
-        <div className="px-2 py-2">
+        {/* Divider */}
+        <div className="h-px bg-primary-700/60 mx-4" />
+
+        {/* Actions section */}
+        <div className="p-2">
           <a
             href="/api/auth/signout"
-            className="block w-full px-3 py-1.5 text-sm text-left text-primary-200 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+            className="group flex items-center gap-2.5 px-3 py-2.5 text-sm text-primary-400 hover:text-gold-400 rounded-lg transition-colors duration-150"
           >
+            <LogOut className="w-4 h-4" />
             Sign out
           </a>
         </div>

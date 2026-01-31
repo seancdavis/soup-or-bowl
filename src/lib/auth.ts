@@ -27,30 +27,47 @@ export function createAuthClientForOrigin(origin: string): AuthClient {
 
 /**
  * Get the current user from the session, or null if not authenticated.
+ * Uses direct fetch to bypass any client-side caching.
  */
 export async function getUser(request: Request): Promise<User | null> {
   const origin = getOrigin(request);
-  const authClient = createAuthClientForOrigin(origin);
   const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
 
   // Get cookies, fixing for Neon Auth if on localhost
-  let cookies = request.headers.get("cookie") || "";
+  const rawCookies = request.headers.get("cookie") || "";
+  let cookies = rawCookies;
   if (isLocalhost) {
     cookies = fixCookiesForNeonAuth(cookies);
   }
 
+  console.log("[AUTH] getUser called");
+  console.log("[AUTH] Raw cookies:", rawCookies ? rawCookies.substring(0, 100) : "(none)");
+  console.log("[AUTH] Fixed cookies:", cookies ? cookies.substring(0, 100) : "(none)");
+
   try {
-    const session = await authClient.getSession({
-      fetchOptions: {
-        headers: { cookie: cookies },
+    // Direct fetch to bypass client caching
+    const response = await fetch(`${origin}/neon-auth/get-session?disableCookieCache=true`, {
+      method: "GET",
+      headers: {
+        cookie: cookies,
+        "Cache-Control": "no-cache, no-store, must-revalidate",
       },
+      cache: "no-store",
     });
 
-    if (!session?.data?.user) {
+    if (!response.ok) {
+      console.log("[AUTH] Session response not ok:", response.status);
       return null;
     }
 
-    const user = session.data.user;
+    const data = await response.json();
+    console.log("[AUTH] Session response:", data?.user ? `User: ${data.user.email}` : "No user");
+
+    if (!data?.user) {
+      return null;
+    }
+
+    const user = data.user;
     return {
       id: user.id,
       email: user.email,

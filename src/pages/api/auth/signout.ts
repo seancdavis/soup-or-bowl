@@ -15,8 +15,8 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   log.info("Signing out user");
   log.debug("Environment:", isLocalhost ? "localhost" : "production");
 
-  // Redirect to login and clear session cookies
-  const redirectResponse = redirect("/login", 302);
+  // Redirect to login with message and clear session cookies
+  const redirectResponse = redirect("/login?message=signed_out", 302);
 
   // Clear session cookies - must match how they were set
   if (isLocalhost) {

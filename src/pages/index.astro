@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import { HomePage } from "../components/pages";
 import { getUserWithApproval } from "../lib/auth";
+import { getEntryByEmail } from "../lib/entries";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -14,8 +15,9 @@ if (!auth.isApproved) {
 }
 
 const { user } = auth;
+const entry = await getEntryByEmail(user.email);
 ---
 
 <Layout title="Soup or Bowl 2026 - Save the Date">
-  <HomePage user={user} />
+  <HomePage user={user} hasEntry={!!entry} />
 </Layout>

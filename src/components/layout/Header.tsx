@@ -1,5 +1,5 @@
 import { Container, Logo } from "../ui";
-import { UserMenu } from "../auth";
+import { UserMenu, NavMenu } from "../auth";
 
 interface HeaderProps {
   user?: {
@@ -21,7 +21,12 @@ export function Header({ user }: HeaderProps) {
             <Logo size="sm" />
           </a>
 
-          {user && <UserMenu user={user} />}
+          {user && (
+            <div className="flex items-center gap-3">
+              <NavMenu />
+              <UserMenu user={user} />
+            </div>
+          )}
         </div>
       </Container>
     </header>

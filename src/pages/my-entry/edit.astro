@@ -1,0 +1,23 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { MyEntryPage } from "../../components/pages";
+import { getUserWithApproval } from "../../lib/auth";
+import { getEntryByEmail } from "../../lib/entries";
+
+const auth = await getUserWithApproval(Astro.request);
+
+if (!auth) {
+  return Astro.redirect("/login");
+}
+
+if (!auth.isApproved) {
+  return Astro.redirect("/unauthorized");
+}
+
+const { user } = auth;
+const entry = await getEntryByEmail(user.email);
+---
+
+<Layout title="Edit Entry - Soup or Bowl 2026">
+  <MyEntryPage user={user} entry={entry} isEditing />
+</Layout>

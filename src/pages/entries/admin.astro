@@ -1,0 +1,28 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { AdminEntriesPage } from "../../components/pages";
+import { getUserWithApproval } from "../../lib/auth";
+import { getAllEntries } from "../../lib/entries";
+
+const auth = await getUserWithApproval(Astro.request);
+
+if (!auth) {
+  return Astro.redirect("/login");
+}
+
+if (!auth.isApproved) {
+  return Astro.redirect("/unauthorized");
+}
+
+// Admin check - return 404 if not admin
+if (!auth.isAdmin) {
+  return new Response(null, { status: 404 });
+}
+
+const { user } = auth;
+const entries = await getAllEntries();
+---
+
+<Layout title="Admin - All Entries - Soup or Bowl 2026">
+  <AdminEntriesPage user={user} entries={entries} />
+</Layout>

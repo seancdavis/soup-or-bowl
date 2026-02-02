@@ -114,14 +114,40 @@ export async function isUserApproved(email: string): Promise<boolean> {
 }
 
 /**
+ * Check if a user is an admin.
+ */
+export async function isUserAdmin(email: string): Promise<boolean> {
+  const { db, approvedUsers } = await import("../db");
+
+  const [approvedUser] = await db
+    .select()
+    .from(approvedUsers)
+    .where(eq(approvedUsers.email, email))
+    .limit(1);
+
+  return approvedUser?.isAdmin ?? false;
+}
+
+/**
  * Get user and approval status. Returns null if not authenticated.
  */
 export async function getUserWithApproval(
   request: Request
-): Promise<{ user: User; isApproved: boolean } | null> {
+): Promise<{ user: User; isApproved: boolean; isAdmin: boolean } | null> {
   const user = await getUser(request);
   if (!user) return null;
 
-  const isApproved = await isUserApproved(user.email);
-  return { user, isApproved };
+  const { db, approvedUsers } = await import("../db");
+
+  const [approvedUser] = await db
+    .select()
+    .from(approvedUsers)
+    .where(eq(approvedUsers.email, user.email))
+    .limit(1);
+
+  return {
+    user,
+    isApproved: !!approvedUser,
+    isAdmin: approvedUser?.isAdmin ?? false,
+  };
 }

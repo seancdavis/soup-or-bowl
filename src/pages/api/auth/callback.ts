@@ -49,8 +49,11 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       return redirect("/login?error=session_failed", 302);
     }
 
-    // Create redirect response with session cookies
-    const response = redirect(destination, 302);
+    // Create redirect response with session cookies and success message
+    const finalDestination = destination.includes("?")
+      ? `${destination}&message=signed_in`
+      : `${destination}?message=signed_in`;
+    const response = redirect(finalDestination, 302);
 
     // Forward cookies, fixing for localhost if needed
     const setCookies = sessionResponse.headers.getSetCookie();
@@ -61,7 +64,7 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       response.headers.append("Set-Cookie", fixedCookie);
     }
 
-    log.info("Session established, redirecting to", destination);
+    log.info("Session established, redirecting to", finalDestination);
     return response;
   } catch (error) {
     log.error("Error:", error);

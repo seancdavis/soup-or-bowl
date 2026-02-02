@@ -9,3 +9,4 @@ export { FootballIcon } from "./FootballIcon";
 export { HeroBrand } from "./HeroBrand";
 export { Logo } from "./Logo";
 export { PageBackground } from "./PageBackground";
+export { Toast } from "./Toast";

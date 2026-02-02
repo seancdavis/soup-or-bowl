@@ -9,14 +9,15 @@ interface User {
 
 interface HomePageProps {
   user: User;
+  hasEntry?: boolean;
 }
 
-export function HomePage({ user }: HomePageProps) {
+export function HomePage({ user, hasEntry = false }: HomePageProps) {
   return (
     <>
       <Header user={user} />
       <main className="pt-16">
-        <Hero />
+        <Hero hasEntry={hasEntry} />
         <SaveTheDate />
       </main>
       <Footer />

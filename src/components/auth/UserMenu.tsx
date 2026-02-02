@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { LogOut, Soup } from "lucide-react";
 import { Avatar } from "../ui";
 
 interface UserMenuProps {
@@ -34,6 +34,13 @@ export function UserMenu({ user }: UserMenuProps) {
 
         {/* Actions section */}
         <div className="p-2">
+          <a
+            href="/my-entry"
+            className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+          >
+            <Soup className="w-4 h-4 text-primary-500" />
+            My Entry
+          </a>
           <a
             href="/api/auth/signout"
             className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"

@@ -12,27 +12,17 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   const origin = getOrigin(request);
   const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
 
-  log.info("Signing out user");
-  log.info("Origin:", origin);
-  log.info("Cookies present:", request.headers.get("cookie")?.substring(0, 100) || "(none)");
+  log.debug("Signing out user");
 
   // Call NeonAuth signout to invalidate session server-side
   try {
-    const signoutResponse = await fetch(`${origin}/neon-auth/sign-out`, {
+    await fetch(`${origin}/neon-auth/sign-out`, {
       method: "POST",
       headers: {
         cookie: request.headers.get("cookie") || "",
         Origin: origin,
       },
     });
-    log.info("NeonAuth signout response:", signoutResponse.status);
-
-    // Forward any Set-Cookie headers from NeonAuth
-    const setCookies = signoutResponse.headers.getSetCookie();
-    log.info("NeonAuth returned", setCookies.length, "Set-Cookie headers");
-    for (const cookie of setCookies) {
-      log.debug("NeonAuth cookie:", cookie.substring(0, 80));
-    }
   } catch (error) {
     log.error("NeonAuth signout error:", error);
   }
@@ -63,6 +53,6 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     );
   }
 
-  log.info("Cookies cleared, redirecting to /login");
+  log.info("User signed out");
   return redirectResponse;
 };

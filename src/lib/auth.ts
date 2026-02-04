@@ -130,6 +130,7 @@ export async function isUserAdmin(email: string): Promise<boolean> {
 
 /**
  * Get user and approval status. Returns null if not authenticated.
+ * If the user has a custom display name in approved_users, it overrides the OAuth name.
  */
 export async function getUserWithApproval(
   request: Request
@@ -145,8 +146,14 @@ export async function getUserWithApproval(
     .where(eq(approvedUsers.email, user.email))
     .limit(1);
 
+  // If there's a custom display name in approved_users, use it
+  const displayName = approvedUser?.name ?? user.name;
+
   return {
-    user,
+    user: {
+      ...user,
+      name: displayName,
+    },
     isApproved: !!approvedUser,
     isAdmin: approvedUser?.isAdmin ?? false,
   };

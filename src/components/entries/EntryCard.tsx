@@ -1,4 +1,4 @@
-import { Zap, Pencil, Trash2, MessageSquare } from "lucide-react";
+import { Zap, Pencil, Trash2, MessageSquare, HelpCircle } from "lucide-react";
 import { Card, Avatar } from "../ui";
 import type { Entry } from "../../db";
 
@@ -6,11 +6,15 @@ interface EntryCardProps {
   entry: Entry;
   isOwner?: boolean;
   showPrivateDetails?: boolean;
+  revealEntries?: boolean;
 }
 
-export function EntryCard({ entry, isOwner = false, showPrivateDetails = false }: EntryCardProps) {
+export function EntryCard({ entry, isOwner = false, showPrivateDetails = false, revealEntries = false }: EntryCardProps) {
   // Show private details (needs power, notes) only for owner or when explicitly requested (admin)
   const showDetails = isOwner || showPrivateDetails;
+
+  // Show entry content (title, description) if owner, or if reveal_entries is enabled
+  const showEntryContent = isOwner || revealEntries || showPrivateDetails;
 
   return (
     <Card variant="bordered" className="relative">
@@ -18,13 +22,29 @@ export function EntryCard({ entry, isOwner = false, showPrivateDetails = false }
       <div className="flex items-start gap-4 mb-4">
         <Avatar name={entry.userName} email={entry.userEmail} size="lg" />
         <div className="flex-1 min-w-0 pt-1">
-          <h3 className="text-xl font-bold text-white truncate">{entry.title}</h3>
-          <p className="text-sm text-primary-400">by {entry.userName || entry.userEmail}</p>
+          {showEntryContent ? (
+            <>
+              <h3 className="text-xl font-bold text-white truncate">{entry.title}</h3>
+              <p className="text-sm text-primary-400">by {entry.userName || entry.userEmail}</p>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-primary-500" />
+                <h3 className="text-xl font-bold text-primary-500 italic">Entry Hidden</h3>
+              </div>
+              <p className="text-sm text-primary-400">by {entry.userName || entry.userEmail}</p>
+            </>
+          )}
         </div>
       </div>
 
       {/* Description */}
-      <p className="text-primary-200 whitespace-pre-wrap">{entry.description}</p>
+      {showEntryContent ? (
+        <p className="text-primary-200 whitespace-pre-wrap">{entry.description}</p>
+      ) : (
+        <p className="text-primary-500 italic">Entry details will be revealed soon!</p>
+      )}
 
       {/* Private details - only for owner or admin */}
       {showDetails && (entry.needsPower || entry.notes) && (

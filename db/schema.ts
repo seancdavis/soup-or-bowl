@@ -43,3 +43,22 @@ export const entries = pgTable("entries", {
 // Type inference for entries
 export type Entry = typeof entries.$inferSelect;
 export type NewEntry = typeof entries.$inferInsert;
+
+/**
+ * Application settings - global settings for the app.
+ * Uses a key-value pattern for flexibility.
+ */
+export const appSettings = pgTable("app_settings", {
+  key: varchar({ length: 255 }).primaryKey(),
+  value: text().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Type inference for app settings
+export type AppSetting = typeof appSettings.$inferSelect;
+export type NewAppSetting = typeof appSettings.$inferInsert;
+
+// Known setting keys
+export const SETTING_KEYS = {
+  REVEAL_ENTRIES: "reveal_entries",
+} as const;

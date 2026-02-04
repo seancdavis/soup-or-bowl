@@ -5,9 +5,10 @@ import type { Entry } from "../../db";
 interface EntryListProps {
   entries: Entry[];
   currentUserEmail?: string;
+  revealEntries?: boolean;
 }
 
-export function EntryList({ entries, currentUserEmail }: EntryListProps) {
+export function EntryList({ entries, currentUserEmail, revealEntries = false }: EntryListProps) {
   if (entries.length === 0) {
     return (
       <div className="text-center py-16">
@@ -25,6 +26,7 @@ export function EntryList({ entries, currentUserEmail }: EntryListProps) {
           key={entry.id}
           entry={entry}
           isOwner={currentUserEmail === entry.userEmail}
+          revealEntries={revealEntries}
         />
       ))}
     </div>

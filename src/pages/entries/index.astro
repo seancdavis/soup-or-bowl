@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { EntriesPage } from "../../components/pages";
 import { getUserWithApproval } from "../../lib/auth";
 import { getAllEntries } from "../../lib/entries";
+import { getRevealEntriesSetting } from "../../lib/settings";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -16,8 +17,9 @@ if (!auth.isApproved) {
 
 const { user } = auth;
 const entries = await getAllEntries();
+const revealEntries = await getRevealEntriesSetting();
 ---
 
 <Layout title="All Entries - Soup or Bowl 2026">
-  <EntriesPage user={user} entries={entries} />
+  <EntriesPage user={user} entries={entries} revealEntries={revealEntries} />
 </Layout>

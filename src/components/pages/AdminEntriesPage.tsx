@@ -1,6 +1,6 @@
-import { Shield, ArrowLeft } from "lucide-react";
+import { Shield, ArrowLeft, Eye, EyeOff, Settings } from "lucide-react";
 import { Header, Footer } from "../layout";
-import { Container, PageBackground } from "../ui";
+import { Container, PageBackground, Card, Button } from "../ui";
 import { EntryCard } from "../entries";
 import type { Entry } from "../../db";
 
@@ -13,9 +13,10 @@ interface User {
 interface AdminEntriesPageProps {
   user: User;
   entries: Entry[];
+  revealEntries: boolean;
 }
 
-export function AdminEntriesPage({ user, entries }: AdminEntriesPageProps) {
+export function AdminEntriesPage({ user, entries, revealEntries }: AdminEntriesPageProps) {
   const entriesNeedingPower = entries.filter((e) => e.needsPower).length;
   const entriesWithNotes = entries.filter((e) => e.notes).length;
 
@@ -49,6 +50,40 @@ export function AdminEntriesPage({ user, entries }: AdminEntriesPageProps) {
               </p>
             </div>
           </div>
+
+          {/* Settings Card */}
+          <Card variant="bordered" className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Settings className="w-5 h-5 text-gold-400" />
+              <h2 className="text-lg font-semibold text-white">Entry Settings</h2>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-white font-medium">Reveal Entry Details</p>
+                <p className="text-sm text-primary-400">
+                  {revealEntries
+                    ? "Entry titles and descriptions are visible to all users."
+                    : "Entry titles and descriptions are hidden from other users."}
+                </p>
+              </div>
+              <form action="/api/admin/settings" method="POST">
+                <input type="hidden" name="action" value="toggle_reveal_entries" />
+                <Button type="submit" variant={revealEntries ? "primary" : "secondary"} size="sm">
+                  {revealEntries ? (
+                    <>
+                      <Eye className="w-4 h-4" />
+                      Visible
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="w-4 h-4" />
+                      Hidden
+                    </>
+                  )}
+                </Button>
+              </form>
+            </div>
+          </Card>
 
           {/* Entry list with private details */}
           {entries.length === 0 ? (

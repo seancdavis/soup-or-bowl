@@ -14,6 +14,12 @@ export const MESSAGES = {
   signed_out: { type: "success", text: "You've been signed out." },
   auth_error: { type: "error", text: "Authentication failed. Please try again." },
 
+  // Profile actions
+  profile_updated: { type: "success", text: "Your profile has been updated." },
+  name_required: { type: "error", text: "Please enter a display name." },
+  name_too_long: { type: "error", text: "Display name is too long." },
+  update_failed: { type: "error", text: "Failed to update profile. Please try again." },
+
   // General
   unauthorized: { type: "error", text: "You don't have permission to do that." },
 } as const;

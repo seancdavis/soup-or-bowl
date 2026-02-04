@@ -1,0 +1,24 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { ProfilePage } from "../components/pages";
+import { getUserWithApproval } from "../lib/auth";
+import { getUserProfile } from "../lib/profile";
+
+const auth = await getUserWithApproval(Astro.request);
+
+if (!auth) {
+  return Astro.redirect("/login");
+}
+
+if (!auth.isApproved) {
+  return Astro.redirect("/unauthorized");
+}
+
+const { user } = auth;
+const profile = await getUserProfile(user.email);
+const displayName = profile?.name ?? null;
+---
+
+<Layout title="Edit Profile - Soup or Bowl 2026">
+  <ProfilePage user={user} displayName={displayName} />
+</Layout>

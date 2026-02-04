@@ -13,9 +13,10 @@ interface User {
 interface EntriesPageProps {
   user: User;
   entries: Entry[];
+  revealEntries?: boolean;
 }
 
-export function EntriesPage({ user, entries }: EntriesPageProps) {
+export function EntriesPage({ user, entries, revealEntries = false }: EntriesPageProps) {
   const hasEntry = entries.some((e) => e.userEmail === user.email);
 
   return (
@@ -60,7 +61,7 @@ export function EntriesPage({ user, entries }: EntriesPageProps) {
           </div>
 
           {/* Entry list */}
-          <EntryList entries={entries} currentUserEmail={user.email} />
+          <EntryList entries={entries} currentUserEmail={user.email} revealEntries={revealEntries} />
         </Container>
       </main>
       <Footer />

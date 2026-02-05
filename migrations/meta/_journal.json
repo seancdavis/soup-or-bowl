@@ -29,6 +29,13 @@
       "when": 1770212357895,
       "tag": "0003_hard_mimic",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770244563522,
+      "tag": "0004_worthless_sheva_callister",
+      "breakpoints": true
     }
   ]
 }

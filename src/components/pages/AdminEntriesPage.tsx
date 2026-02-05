@@ -1,4 +1,4 @@
-import { Shield, ArrowLeft, Eye, EyeOff, Settings } from "lucide-react";
+import { Shield, ArrowLeft, Eye, EyeOff, Settings, Vote } from "lucide-react";
 import { Header, Footer } from "../layout";
 import { Container, PageBackground, Card, Button } from "../ui";
 import { EntryCard } from "../entries";
@@ -37,18 +37,26 @@ export function AdminEntriesPage({ user, entries, revealEntries }: AdminEntriesP
           </a>
 
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center">
-              <Shield className="w-6 h-6 text-gold-400" />
+          <div className="flex items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center">
+                <Shield className="w-6 h-6 text-gold-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Admin View</h1>
+                <p className="text-primary-400">
+                  {entries.length} {entries.length === 1 ? "entry" : "entries"}
+                  {entriesNeedingPower > 0 && ` · ${entriesNeedingPower} need power`}
+                  {entriesWithNotes > 0 && ` · ${entriesWithNotes} with notes`}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Admin View</h1>
-              <p className="text-primary-400">
-                {entries.length} {entries.length === 1 ? "entry" : "entries"}
-                {entriesNeedingPower > 0 && ` · ${entriesNeedingPower} need power`}
-                {entriesWithNotes > 0 && ` · ${entriesWithNotes} with notes`}
-              </p>
-            </div>
+            <a href="/vote/admin">
+              <Button variant="secondary" size="sm">
+                <Vote className="w-4 h-4" />
+                Voting Admin
+              </Button>
+            </a>
           </div>
 
           {/* Settings Card */}

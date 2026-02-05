@@ -222,7 +222,8 @@ import { LogOut, User, Settings } from "lucide-react";
 
 | Variable | Description |
 |----------|-------------|
-| `NETLIFY_DATABASE_URL` | Neon PostgreSQL connection string (auto-set by Netlify DB) |
+| `NETLIFY_DATABASE_URL` | Neon PostgreSQL connection string (auto-set by Netlify DB for dev/preview) |
+| `NETLIFY_PRODUCTION_DATABASE_URL` | Production database URL (for `db:migrate:prod` script, set locally) |
 | `NEON_AUTH_URL` | NeonAuth endpoint (hard-coded in `netlify.toml`) |
 | `LOG_LEVEL` | Logger level: `debug`, `info`, `warn`, `error`, `silent` (default: `info`) |
 | `LOG_COLORS` | Enable/disable colored logs: `true`/`false` (default: `true`) |
@@ -233,10 +234,29 @@ import { LogOut, User, Settings } from "lucide-react";
 npm run dev                    # Start dev server (netlify dev)
 npm run build                  # Production build
 npm run db:generate            # Generate migrations
-npm run db:migrate             # Apply migrations
+npm run db:migrate             # Apply migrations (dev/preview database)
+npm run db:migrate:prod        # Apply migrations (PRODUCTION - requires confirmation)
 npm run db:studio              # Open Drizzle Studio
 
 # With logging options
 LOG_LEVEL=debug npm run dev    # Verbose logging
 LOG_LEVEL=silent npm run dev   # No logging
+```
+
+### Production Database Migrations
+
+The `db:migrate:prod` script has safeguards to prevent accidental production changes:
+
+1. Requires the `NETLIFY_PRODUCTION_DATABASE_URL` environment variable
+2. Requires typing "PRODUCTION" to confirm
+
+To get the production database URL:
+```bash
+netlify env:get NETLIFY_DATABASE_URL --context production
+```
+
+Then set it locally (don't commit this):
+```bash
+export NETLIFY_PRODUCTION_DATABASE_URL="postgres://..."
+npm run db:migrate:prod
 ```

@@ -11,7 +11,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "netlify dev:exec drizzle-kit studio",
-    "db:migrate": "netlify dev:exec drizzle-kit migrate"
+    "db:migrate": "netlify dev:exec drizzle-kit migrate",
+    "db:migrate:prod": "node scripts/migrate-production.js --production"
   },
   "dependencies": {
     "@astrojs/netlify": "^6.6.4",

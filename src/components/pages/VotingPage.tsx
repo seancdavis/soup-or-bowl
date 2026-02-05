@@ -96,7 +96,10 @@ export function VotingPage({
                   </div>
                   <div>
                     <div className="font-medium text-white">
-                      {getEntryById(existingVote.firstPlaceEntryId)?.userName || "Unknown"}
+                      {(() => {
+                        const entry = getEntryById(existingVote.firstPlaceEntryId);
+                        return entry ? `${entry.title} (${entry.userName || entry.userEmail})` : "Unknown";
+                      })()}
                     </div>
                     <div className="text-sm text-primary-400">3 points</div>
                   </div>
@@ -107,7 +110,10 @@ export function VotingPage({
                   </div>
                   <div>
                     <div className="font-medium text-white">
-                      {getEntryById(existingVote.secondPlaceEntryId)?.userName || "Unknown"}
+                      {(() => {
+                        const entry = getEntryById(existingVote.secondPlaceEntryId);
+                        return entry ? `${entry.title} (${entry.userName || entry.userEmail})` : "Unknown";
+                      })()}
                     </div>
                     <div className="text-sm text-primary-400">2 points</div>
                   </div>
@@ -118,7 +124,10 @@ export function VotingPage({
                   </div>
                   <div>
                     <div className="font-medium text-white">
-                      {getEntryById(existingVote.thirdPlaceEntryId)?.userName || "Unknown"}
+                      {(() => {
+                        const entry = getEntryById(existingVote.thirdPlaceEntryId);
+                        return entry ? `${entry.title} (${entry.userName || entry.userEmail})` : "Unknown";
+                      })()}
                     </div>
                     <div className="text-sm text-primary-400">1 point</div>
                   </div>
@@ -156,7 +165,7 @@ export function VotingPage({
                         <option value="">Select your top choice...</option>
                         {votableEntries.map((entry) => (
                           <option key={entry.id} value={entry.id}>
-                            {entry.userName || entry.userEmail}
+                            {entry.title} ({entry.userName || entry.userEmail})
                           </option>
                         ))}
                       </select>
@@ -179,7 +188,7 @@ export function VotingPage({
                         <option value="">Select your second choice...</option>
                         {votableEntries.map((entry) => (
                           <option key={entry.id} value={entry.id}>
-                            {entry.userName || entry.userEmail}
+                            {entry.title} ({entry.userName || entry.userEmail})
                           </option>
                         ))}
                       </select>
@@ -202,7 +211,7 @@ export function VotingPage({
                         <option value="">Select your third choice...</option>
                         {votableEntries.map((entry) => (
                           <option key={entry.id} value={entry.id}>
-                            {entry.userName || entry.userEmail}
+                            {entry.title} ({entry.userName || entry.userEmail})
                           </option>
                         ))}
                       </select>

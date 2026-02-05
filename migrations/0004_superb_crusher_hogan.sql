@@ -1,0 +1,1 @@
+ALTER TABLE "approved_users" ADD COLUMN "custom_image" varchar(255);

@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { ProfilePage } from "../components/pages";
+import { ProfileImageUpload } from "../components/profile";
 import { getUserWithApproval } from "../lib/auth";
 import { getUserProfile } from "../lib/profile";
 
@@ -17,8 +18,23 @@ if (!auth.isApproved) {
 const { user } = auth;
 const profile = await getUserProfile(user.email);
 const displayName = profile?.name ?? null;
+const customImage = profile?.customImage ?? null;
+const googleImage = user.googleImage ?? user.image;
 ---
 
 <Layout title="Edit Profile - Soup or Bowl 2026">
-  <ProfilePage user={user} displayName={displayName} />
+  <ProfilePage
+    user={user}
+    displayName={displayName}
+    customImage={customImage}
+    imageUploadSlot={true}
+  >
+    <ProfileImageUpload
+      client:load
+      currentImage={customImage}
+      googleImage={googleImage}
+      userName={displayName ?? user.name}
+      userEmail={user.email}
+    />
+  </ProfilePage>
 </Layout>

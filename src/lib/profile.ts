@@ -41,3 +41,19 @@ export async function updateUserDisplayName(
 
   return updatedUser;
 }
+
+/**
+ * Update user's custom profile image key in approved_users table.
+ */
+export async function updateUserCustomImage(
+  email: string,
+  imageKey: string
+): Promise<ApprovedUser | null> {
+  const [updatedUser] = await db
+    .update(approvedUsers)
+    .set({ customImage: imageKey })
+    .where(eq(approvedUsers.email, email))
+    .returning();
+
+  return updatedUser ?? null;
+}

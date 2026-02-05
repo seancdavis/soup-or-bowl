@@ -10,6 +10,7 @@ export type User = {
   email: string;
   name: string | null;
   image: string | null;
+  googleImage?: string | null;
 };
 
 /**
@@ -130,7 +131,8 @@ export async function isUserAdmin(email: string): Promise<boolean> {
 
 /**
  * Get user and approval status. Returns null if not authenticated.
- * If the user has a custom display name in approved_users, it overrides the OAuth name.
+ * If the user has a custom display name or image in approved_users, it overrides the OAuth values.
+ * The original Google image is preserved as googleImage for fallback.
  */
 export async function getUserWithApproval(
   request: Request
@@ -149,10 +151,16 @@ export async function getUserWithApproval(
   // If there's a custom display name in approved_users, use it
   const displayName = approvedUser?.name ?? user.name;
 
+  // If there's a custom image, use the CDN URL; otherwise fall back to Google image
+  const customImageKey = approvedUser?.customImage;
+  const displayImage = customImageKey ? `/img/avatar/${customImageKey}` : user.image;
+
   return {
     user: {
       ...user,
       name: displayName,
+      image: displayImage,
+      googleImage: user.image,
     },
     isApproved: !!approvedUser,
     isAdmin: approvedUser?.isAdmin ?? false,

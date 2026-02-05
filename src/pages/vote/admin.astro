@@ -1,0 +1,38 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { AdminVotingPage } from "../../components/pages";
+import { getUserWithApproval } from "../../lib/auth";
+import { getVotesWithEntries } from "../../lib/votes";
+import { getVotingSettings } from "../../lib/settings";
+
+const auth = await getUserWithApproval(Astro.request);
+
+if (!auth) {
+  return Astro.redirect("/login");
+}
+
+if (!auth.isApproved) {
+  return Astro.redirect("/unauthorized");
+}
+
+// Admin-only page
+if (!auth.isAdmin) {
+  return new Response(null, { status: 404 });
+}
+
+const { user } = auth;
+const [votesWithEntries, votingSettings] = await Promise.all([
+  getVotesWithEntries(),
+  getVotingSettings(),
+]);
+---
+
+<Layout title="Voting Admin - Soup or Bowl 2026">
+  <AdminVotingPage
+    user={user}
+    votesWithEntries={votesWithEntries}
+    votingActive={votingSettings.votingActive}
+    votingLocked={votingSettings.votingLocked}
+    revealResults={votingSettings.revealResults}
+  />
+</Layout>

@@ -62,4 +62,26 @@ export type NewAppSetting = typeof appSettings.$inferInsert;
 // Known setting keys
 export const SETTING_KEYS = {
   REVEAL_ENTRIES: "reveal_entries",
+  VOTING_ACTIVE: "voting_active",
+  VOTING_LOCKED: "voting_locked",
+  REVEAL_RESULTS: "reveal_results",
 } as const;
+
+/**
+ * Votes table - stores each user's ranked votes for entries.
+ * Each user can vote once, selecting their top 3 choices.
+ */
+export const votes = pgTable("votes", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  voterEmail: varchar("voter_email", { length: 255 }).notNull().unique(),
+  voterName: varchar("voter_name", { length: 255 }),
+  firstPlaceEntryId: integer("first_place_entry_id").notNull(),
+  secondPlaceEntryId: integer("second_place_entry_id").notNull(),
+  thirdPlaceEntryId: integer("third_place_entry_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Type inference for votes
+export type Vote = typeof votes.$inferSelect;
+export type NewVote = typeof votes.$inferInsert;

@@ -3,7 +3,8 @@ import Layout from "../../layouts/Layout.astro";
 import { EntriesPage } from "../../components/pages";
 import { getUserWithApproval } from "../../lib/auth";
 import { getAllEntries } from "../../lib/entries";
-import { getRevealEntriesSetting } from "../../lib/settings";
+import { getRevealEntriesSetting, getRevealResultsSetting } from "../../lib/settings";
+import { getWinner } from "../../lib/votes";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -16,10 +17,22 @@ if (!auth.isApproved) {
 }
 
 const { user } = auth;
-const entries = await getAllEntries();
-const revealEntries = await getRevealEntriesSetting();
+const [entries, revealEntries, revealResults] = await Promise.all([
+  getAllEntries(),
+  getRevealEntriesSetting(),
+  getRevealResultsSetting(),
+]);
+
+// Only fetch winner if results are revealed
+const winner = revealResults ? await getWinner() : null;
 ---
 
 <Layout title="All Entries - Soup or Bowl 2026">
-  <EntriesPage user={user} entries={entries} revealEntries={revealEntries} />
+  <EntriesPage
+    user={user}
+    entries={entries}
+    revealEntries={revealEntries}
+    revealResults={revealResults}
+    winner={winner}
+  />
 </Layout>

@@ -20,6 +20,16 @@ export const MESSAGES = {
   name_too_long: { type: "error", text: "Display name is too long." },
   update_failed: { type: "error", text: "Failed to update profile. Please try again." },
 
+  // Voting actions
+  vote_saved: { type: "success", text: "Your vote has been recorded!" },
+  voting_inactive: { type: "error", text: "Voting is not currently open." },
+  voting_locked: { type: "error", text: "Voting is locked. No changes allowed." },
+  incomplete_vote: { type: "error", text: "Please select all three choices." },
+  duplicate_selections: { type: "error", text: "You must select three different entries." },
+  invalid_entry: { type: "error", text: "One or more selected entries are invalid." },
+  cannot_vote_self: { type: "error", text: "You cannot vote for your own entry." },
+  vote_error: { type: "error", text: "Failed to save vote. Please try again." },
+
   // General
   unauthorized: { type: "error", text: "You don't have permission to do that." },
 } as const;

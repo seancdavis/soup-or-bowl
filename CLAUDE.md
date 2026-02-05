@@ -214,9 +214,34 @@ import { LogOut, User, Settings } from "lucide-react";
 | `/` | `index.astro` | Required + Approved | Home page |
 | `/login` | `login.astro` | None (redirects if logged in) | Login page |
 | `/unauthorized` | `unauthorized.astro` | Required (redirects if approved) | Unapproved users |
+| `/entries` | `entries/index.astro` | Required + Approved | All entries list |
+| `/entries/admin` | `entries/admin.astro` | Required + Approved + Admin | Admin entries view |
+| `/vote` | `vote/index.astro` | Required + Approved | Voting page |
+| `/vote/admin` | `vote/admin.astro` | Required + Approved + Admin | Admin voting controls |
 | `/api/auth/signin` | `api/auth/signin.ts` | None | Start OAuth |
 | `/api/auth/callback` | `api/auth/callback.ts` | None | OAuth callback |
 | `/api/auth/signout` | `api/auth/signout.ts` | None | Sign out |
+| `/api/votes` | `api/votes.ts` | Required + Approved | Submit/update vote |
+| `/api/admin/settings` | `api/admin/settings.ts` | Required + Approved + Admin | Toggle app settings |
+
+### Voting System
+
+The voting system allows users to rank their top 3 choices from competition entries.
+
+**Admin Settings (controlled via `/vote/admin`):**
+- `voting_active` - When enabled, voting page is accessible
+- `voting_locked` - When enabled (with voting active), users can view but not edit votes
+- `reveal_results` - When enabled, winner is displayed on the entries page
+
+**Scoring:**
+- 1st Place: 3 points
+- 2nd Place: 2 points
+- 3rd Place: 1 point
+
+**Key Files:**
+- `src/lib/votes.ts` - Vote CRUD and score calculation
+- `src/lib/settings.ts` - Settings get/set functions
+- `db/schema.ts` - Votes table definition
 
 ## Environment Variables
 

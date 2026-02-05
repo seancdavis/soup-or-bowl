@@ -15,6 +15,7 @@ export const approvedUsers = pgTable("approved_users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   email: varchar({ length: 255 }).notNull().unique(),
   name: varchar({ length: 255 }),
+  customImage: varchar("custom_image", { length: 255 }),
   isAdmin: boolean("is_admin").notNull().default(false),
   addedAt: timestamp("added_at").defaultNow(),
   addedBy: varchar("added_by", { length: 255 }),

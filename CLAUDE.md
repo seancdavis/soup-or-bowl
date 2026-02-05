@@ -124,6 +124,14 @@ All auth is server-side. No client-side auth SDK.
 **Localhost Cookie Handling:**
 NeonAuth uses `__Secure-` cookies which require HTTPS. For localhost development, the auth routes automatically handle cookie prefix conversion.
 
+**Deploy Preview Configuration:**
+Each Netlify deploy preview URL must be added to NeonAuth's trusted origins. The callback URL must match exactly - including trailing slashes. Configure origins without trailing slash (e.g., `https://deploy-preview-1--soup-or-bowl.netlify.app`).
+
+**Sign Out Implementation:**
+Sign out requires two things:
+1. Call NeonAuth's sign-out endpoint: `POST ${origin}/neon-auth/sign-out` with the session cookie
+2. Clear cookies with matching attributes - production cookies use `Partitioned`, so clearing must include `Partitioned` too
+
 ### Database
 - Use Drizzle ORM for all database operations
 - Schema defined in `db/schema.ts`

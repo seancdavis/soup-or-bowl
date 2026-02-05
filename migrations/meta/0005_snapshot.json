@@ -1,6 +1,6 @@
 {
-  "id": "c29eeb50-5893-47b4-9ae4-ec0c8c41259d",
-  "prevId": "785f0143-e03b-4757-9f11-08be6929452d",
+  "id": "5eb6180a-7158-4abf-b661-dab5341dc365",
+  "prevId": "c29eeb50-5893-47b4-9ae4-ec0c8c41259d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -200,6 +200,88 @@
           "nullsNotDistinct": false,
           "columns": [
             "user_email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.votes": {
+      "name": "votes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "votes_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "voter_email": {
+          "name": "voter_email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "voter_name": {
+          "name": "voter_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "first_place_entry_id": {
+          "name": "first_place_entry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "second_place_entry_id": {
+          "name": "second_place_entry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "third_place_entry_id": {
+          "name": "third_place_entry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "votes_voter_email_unique": {
+          "name": "votes_voter_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "voter_email"
           ]
         }
       },

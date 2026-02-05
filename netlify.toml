@@ -2,6 +2,9 @@
   command = "npm run build"
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+
 [dev]
   command = "astro dev"
   targetPort = 4321
@@ -11,3 +14,15 @@
   to = "https://ep-solitary-violet-aelpmw2w.neonauth.c-2.us-east-2.aws.neon.tech/neondb/auth/:splat"
   status = 200
   force = true
+
+# Profile image CDN routes - avatar thumbnail (36x36 for header menu)
+[[redirects]]
+  from = "/img/avatar/:key"
+  to = "/.netlify/images?url=/uploads/profile-images/:key&w=72&h=72&fit=cover"
+  status = 200
+
+# Profile image CDN routes - profile view (128x128 for profile page)
+[[redirects]]
+  from = "/img/profile/:key"
+  to = "/.netlify/images?url=/uploads/profile-images/:key&w=128&h=128&fit=cover"
+  status = 200

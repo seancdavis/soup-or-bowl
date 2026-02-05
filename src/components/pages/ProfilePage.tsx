@@ -1,4 +1,5 @@
 import { User, ArrowLeft } from "lucide-react";
+import type { ReactNode } from "react";
 import { Header, Footer } from "../layout";
 import { Container, PageBackground, Button, Card } from "../ui";
 
@@ -6,14 +7,18 @@ interface ProfilePageUser {
   name: string | null;
   email: string;
   image: string | null;
+  googleImage?: string | null;
 }
 
 interface ProfilePageProps {
   user: ProfilePageUser;
   displayName: string | null;
+  customImage: string | null;
+  imageUploadSlot?: boolean;
+  children?: ReactNode;
 }
 
-export function ProfilePage({ user, displayName }: ProfilePageProps) {
+export function ProfilePage({ user, displayName, customImage, children }: ProfilePageProps) {
   // Use the custom display name if set, otherwise fall back to OAuth name
   const currentName = displayName ?? user.name ?? "";
 
@@ -41,10 +46,15 @@ export function ProfilePage({ user, displayName }: ProfilePageProps) {
             <div>
               <h1 className="text-2xl font-bold text-white">Edit Profile</h1>
               <p className="text-primary-400">
-                Update your display name for the competition
+                Update your profile photo and display name
               </p>
             </div>
           </div>
+
+          {/* Profile Image Upload (passed as children for client hydration) */}
+          <Card variant="bordered" className="mb-6">
+            {children}
+          </Card>
 
           {/* Form */}
           <Card variant="bordered">

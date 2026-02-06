@@ -1,0 +1,59 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { SquaresLockedPage } from "../../components/pages";
+import { SquaresPickingPageWrapper } from "../../components/pages/SquaresPickingPageWrapper";
+import { getUserWithApproval } from "../../lib/auth";
+import { getSquaresSettings } from "../../lib/settings";
+import {
+  getAllSquares,
+  getAxisNumbers,
+  getScores,
+  calculateWinners,
+  buildGrid,
+  countSquaresByUser,
+} from "../../lib/squares";
+
+const auth = await getUserWithApproval(Astro.request);
+
+if (!auth) {
+  return Astro.redirect("/login");
+}
+
+if (!auth.isApproved) {
+  return Astro.redirect("/unauthorized");
+}
+
+const { user } = auth;
+
+const [settings, allSquares, axisNumbers, scores, winners] = await Promise.all([
+  getSquaresSettings(),
+  getAllSquares(),
+  getAxisNumbers(),
+  getScores(),
+  calculateWinners(),
+]);
+
+const grid = buildGrid(allSquares);
+const userSquareCount = await countSquaresByUser(user.email);
+---
+
+<Layout title="Squares - Soup or Bowl 2026">
+  {settings.squaresLocked ? (
+    <SquaresLockedPage
+      user={user}
+      grid={grid}
+      rowNumbers={axisNumbers.rows}
+      colNumbers={axisNumbers.cols}
+      scores={scores}
+      winners={winners}
+    />
+  ) : (
+    <SquaresPickingPageWrapper
+      user={user}
+      grid={grid}
+      userSquareCount={userSquareCount}
+      maxSquaresPerUser={settings.maxSquaresPerUser}
+      client:load
+    />
+  )}
+</Layout>

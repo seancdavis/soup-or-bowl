@@ -1,4 +1,4 @@
-import { Menu, Trophy, Vote } from "lucide-react";
+import { Menu, Trophy, Vote, Grid3X3 } from "lucide-react";
 
 export function NavMenu() {
   return (
@@ -27,6 +27,13 @@ export function NavMenu() {
           >
             <Vote className="w-4 h-4 text-primary-500" />
             Vote
+          </a>
+          <a
+            href="/squares"
+            className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+          >
+            <Grid3X3 className="w-4 h-4 text-primary-500" />
+            Squares
           </a>
         </div>
       </div>

@@ -1,0 +1,55 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { AdminSquaresPage } from "../../components/pages";
+import { getUserWithApproval } from "../../lib/auth";
+import { getSquaresSettings } from "../../lib/settings";
+import {
+  getAllSquares,
+  getAxisNumbers,
+  getScores,
+  calculateWinners,
+  buildGrid,
+} from "../../lib/squares";
+
+const auth = await getUserWithApproval(Astro.request);
+
+if (!auth) {
+  return Astro.redirect("/login");
+}
+
+if (!auth.isApproved) {
+  return Astro.redirect("/unauthorized");
+}
+
+// Admin-only page
+if (!auth.isAdmin) {
+  return new Response(null, { status: 404 });
+}
+
+const { user } = auth;
+
+const [settings, allSquares, axisNumbers, scores, winners] = await Promise.all([
+  getSquaresSettings(),
+  getAllSquares(),
+  getAxisNumbers(),
+  getScores(),
+  calculateWinners(),
+]);
+
+const grid = buildGrid(allSquares);
+const totalSquaresClaimed = allSquares.length;
+---
+
+<Layout title="Squares Admin - Soup or Bowl 2026">
+  <AdminSquaresPage
+    user={user}
+    grid={grid}
+    rowNumbers={axisNumbers.rows}
+    colNumbers={axisNumbers.cols}
+    scores={scores}
+    winners={winners}
+    squaresLocked={settings.squaresLocked}
+    maxSquaresPerUser={settings.maxSquaresPerUser}
+    totalSquaresClaimed={totalSquaresClaimed}
+  />
+</Layout>

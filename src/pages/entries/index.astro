@@ -34,5 +34,6 @@ const winner = revealResults ? await getWinner() : null;
     revealEntries={revealEntries}
     revealResults={revealResults}
     winner={winner}
+    isAdmin={auth.isAdmin}
   />
 </Layout>

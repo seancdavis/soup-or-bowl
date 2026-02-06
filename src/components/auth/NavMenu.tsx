@@ -1,6 +1,10 @@
-import { Menu, Trophy, Vote } from "lucide-react";
+import { Menu, Settings, Trophy, Vote } from "lucide-react";
 
-export function NavMenu() {
+interface NavMenuProps {
+  isAdmin?: boolean;
+}
+
+export function NavMenu({ isAdmin }: NavMenuProps) {
   return (
     <details className="relative">
       <summary className="flex items-center justify-center w-9 h-9 rounded-full bg-primary-800/50 hover:bg-primary-700/50 ring-2 ring-transparent hover:ring-gold-500/30 transition-all duration-200 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
@@ -28,6 +32,28 @@ export function NavMenu() {
             <Vote className="w-4 h-4 text-primary-500" />
             Vote
           </a>
+
+          {isAdmin && (
+            <>
+              {/* Admin divider */}
+              <div className="h-px bg-primary-700/60 mx-2 my-1" />
+
+              <a
+                href="/entries/admin"
+                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+              >
+                <Settings className="w-4 h-4 text-primary-500" />
+                Entry Admin
+              </a>
+              <a
+                href="/vote/admin"
+                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+              >
+                <Settings className="w-4 h-4 text-primary-500" />
+                Voting Admin
+              </a>
+            </>
+          )}
         </div>
       </div>
     </details>

@@ -15,6 +15,7 @@ interface VotingPageProps {
   existingVote: VoteType | null;
   votingActive: boolean;
   votingLocked: boolean;
+  isAdmin?: boolean;
 }
 
 export function VotingPage({
@@ -23,6 +24,7 @@ export function VotingPage({
   existingVote,
   votingActive,
   votingLocked,
+  isAdmin,
 }: VotingPageProps) {
   // Filter out user's own entry from voting options
   const votableEntries = entries.filter((e) => e.userEmail !== user.email);
@@ -36,7 +38,7 @@ export function VotingPage({
 
   return (
     <>
-      <Header user={user} />
+      <Header user={user} isAdmin={isAdmin} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

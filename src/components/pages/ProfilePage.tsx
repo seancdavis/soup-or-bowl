@@ -16,15 +16,16 @@ interface ProfilePageProps {
   customImage: string | null;
   imageUploadSlot?: boolean;
   children?: ReactNode;
+  isAdmin?: boolean;
 }
 
-export function ProfilePage({ user, displayName, customImage, children }: ProfilePageProps) {
+export function ProfilePage({ user, displayName, customImage, children, isAdmin }: ProfilePageProps) {
   // Use the custom display name if set, otherwise fall back to OAuth name
   const currentName = displayName ?? user.name ?? "";
 
   return (
     <>
-      <Header user={{ ...user, name: displayName ?? user.name }} />
+      <Header user={{ ...user, name: displayName ?? user.name }} isAdmin={isAdmin} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

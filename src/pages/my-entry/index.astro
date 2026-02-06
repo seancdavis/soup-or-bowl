@@ -19,5 +19,5 @@ const entry = await getEntryByEmail(user.email);
 ---
 
 <Layout title="My Entry - Soup or Bowl 2026">
-  <MyEntryPage user={user} entry={entry} />
+  <MyEntryPage user={user} entry={entry} isAdmin={auth.isAdmin} />
 </Layout>

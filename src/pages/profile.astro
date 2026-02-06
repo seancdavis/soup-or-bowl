@@ -28,6 +28,7 @@ const googleImage = user.googleImage ?? user.image;
     displayName={displayName}
     customImage={customImage}
     imageUploadSlot={true}
+    isAdmin={auth.isAdmin}
   >
     <ProfileImageUpload
       client:load

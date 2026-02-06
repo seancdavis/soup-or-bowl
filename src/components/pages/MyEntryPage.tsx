@@ -14,12 +14,13 @@ interface MyEntryPageProps {
   user: User;
   entry: Entry | null;
   isEditing?: boolean;
+  isAdmin?: boolean;
 }
 
-export function MyEntryPage({ user, entry, isEditing = false }: MyEntryPageProps) {
+export function MyEntryPage({ user, entry, isEditing = false, isAdmin }: MyEntryPageProps) {
   return (
     <>
-      <Header user={user} />
+      <Header user={user} isAdmin={isAdmin} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

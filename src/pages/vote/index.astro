@@ -32,5 +32,6 @@ const [entries, existingVote, votingActive, votingLocked] = await Promise.all([
     existingVote={existingVote}
     votingActive={votingActive}
     votingLocked={votingLocked}
+    isAdmin={auth.isAdmin}
   />
 </Layout>

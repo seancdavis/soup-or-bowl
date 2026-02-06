@@ -21,6 +21,7 @@ interface EntriesPageProps {
   revealEntries?: boolean;
   revealResults?: boolean;
   winner?: Winner | null;
+  isAdmin?: boolean;
 }
 
 export function EntriesPage({
@@ -29,12 +30,13 @@ export function EntriesPage({
   revealEntries = false,
   revealResults = false,
   winner = null,
+  isAdmin,
 }: EntriesPageProps) {
   const hasEntry = entries.some((e) => e.userEmail === user.email);
 
   return (
     <>
-      <Header user={user} />
+      <Header user={user} isAdmin={isAdmin} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

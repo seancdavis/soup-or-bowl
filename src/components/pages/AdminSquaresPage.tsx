@@ -161,21 +161,25 @@ export function AdminSquaresPage({
                     Currently set to {maxSquaresPerUser} squares per user.
                   </p>
                 </div>
-                <form action="/api/admin/squares" method="POST" className="flex items-center gap-2">
-                  <input type="hidden" name="action" value="set_max_squares" />
-                  <input type="hidden" name="return_to" value="/squares/admin" />
-                  <input
-                    type="number"
-                    name="max_squares"
-                    min="1"
-                    max="100"
-                    defaultValue={maxSquaresPerUser}
-                    className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
-                  />
-                  <Button type="submit" variant="secondary" size="sm">
-                    Set
-                  </Button>
-                </form>
+                {squaresLocked ? (
+                  <span className="text-2xl font-bold text-white">{maxSquaresPerUser}</span>
+                ) : (
+                  <form action="/api/admin/squares" method="POST" className="flex items-center gap-2">
+                    <input type="hidden" name="action" value="set_max_squares" />
+                    <input type="hidden" name="return_to" value="/squares/admin" />
+                    <input
+                      type="number"
+                      name="max_squares"
+                      min="1"
+                      max="100"
+                      defaultValue={maxSquaresPerUser}
+                      className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
+                    />
+                    <Button type="submit" variant="secondary" size="sm">
+                      Set
+                    </Button>
+                  </form>
+                )}
               </div>
             </div>
           </Card>
@@ -361,55 +365,61 @@ export function AdminSquaresPage({
             </div>
 
             {/* Proxy Prediction */}
-            <div className="p-4 bg-primary-800/50 rounded-lg mb-4">
-              <p className="text-white font-medium mb-3">Add Proxy Prediction</p>
-              <form
-                action="/api/admin/squares"
-                method="POST"
-                className="space-y-3"
-              >
-                <input type="hidden" name="action" value="proxy_prediction" />
-                <input type="hidden" name="return_to" value="/squares/admin" />
+            {squaresLocked ? (
+              <div className="p-4 bg-primary-800/50 rounded-lg mb-4 text-primary-400 text-sm">
+                Game is locked. Unlock the game to add proxy predictions.
+              </div>
+            ) : (
+              <div className="p-4 bg-primary-800/50 rounded-lg mb-4">
+                <p className="text-white font-medium mb-3">Add Proxy Prediction</p>
+                <form
+                  action="/api/admin/squares"
+                  method="POST"
+                  className="space-y-3"
+                >
+                  <input type="hidden" name="action" value="proxy_prediction" />
+                  <input type="hidden" name="return_to" value="/squares/admin" />
 
-                <div>
-                  <label className="text-white text-sm font-medium mb-1 block">Player Name</label>
-                  <input
-                    type="text"
-                    name="prediction_name"
-                    required
-                    placeholder="e.g. Uncle Dave"
-                    className="w-full max-w-xs px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white placeholder-primary-500"
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-end gap-4">
                   <div>
-                    <label className="text-green-400 text-sm font-medium mb-1 block">SEA Score</label>
+                    <label className="text-white text-sm font-medium mb-1 block">Player Name</label>
                     <input
-                      type="number"
-                      name="prediction_seahawks"
-                      min="0"
+                      type="text"
+                      name="prediction_name"
                       required
-                      className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
+                      placeholder="e.g. Uncle Dave"
+                      className="w-full max-w-xs px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white placeholder-primary-500"
                     />
                   </div>
-                  <div>
-                    <label className="text-red-400 text-sm font-medium mb-1 block">NE Score</label>
-                    <input
-                      type="number"
-                      name="prediction_patriots"
-                      min="0"
-                      required
-                      className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
-                    />
+
+                  <div className="flex flex-wrap items-end gap-4">
+                    <div>
+                      <label className="text-green-400 text-sm font-medium mb-1 block">SEA Score</label>
+                      <input
+                        type="number"
+                        name="prediction_seahawks"
+                        min="0"
+                        required
+                        className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-red-400 text-sm font-medium mb-1 block">NE Score</label>
+                      <input
+                        type="number"
+                        name="prediction_patriots"
+                        min="0"
+                        required
+                        className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
+                      />
+                    </div>
+                    <Button type="submit" variant="primary" size="sm">
+                      <UserPlus className="w-4 h-4" />
+                      Add Prediction
+                    </Button>
                   </div>
-                  <Button type="submit" variant="primary" size="sm">
-                    <UserPlus className="w-4 h-4" />
-                    Add Prediction
-                  </Button>
-                </div>
-              </form>
-            </div>
+                </form>
+              </div>
+            )}
 
             {/* All Predictions Table */}
             {predictions.length > 0 && (

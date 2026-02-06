@@ -26,7 +26,7 @@ if (!auth.isApproved) {
   return Astro.redirect("/unauthorized");
 }
 
-const { user } = auth;
+const { user, isAdmin } = auth;
 
 const [settings, allSquares, axisNumbers, scores, winners, userPrediction, allPredictions, actualFinalScore] = await Promise.all([
   getSquaresSettings(),
@@ -52,6 +52,7 @@ const predictionResults = calculatePredictionResults(
   {settings.squaresLocked ? (
     <SquaresLockedPage
       user={user}
+      isAdmin={isAdmin}
       grid={grid}
       rowNumbers={axisNumbers.rows}
       colNumbers={axisNumbers.cols}
@@ -64,6 +65,7 @@ const predictionResults = calculatePredictionResults(
   ) : (
     <SquaresPickingPageWrapper
       user={user}
+      isAdmin={isAdmin}
       grid={grid}
       userSquareCount={userSquareCount}
       maxSquaresPerUser={settings.maxSquaresPerUser}

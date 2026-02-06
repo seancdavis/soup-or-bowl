@@ -10,7 +10,7 @@ export function SaveTheDate() {
     day: "numeric",
   });
 
-  const featureTags = ["Soup or Bowl Competition", "Super Bowl Watch Party", "Live Voting"];
+  const featureTags = ["SoupOrBowl Competition", "Super Bowl Watch Party", "Live Voting"];
 
   return (
     <section className="relative py-24 md:py-32 overflow-hidden">

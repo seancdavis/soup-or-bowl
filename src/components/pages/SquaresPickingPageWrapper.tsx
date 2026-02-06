@@ -12,6 +12,7 @@ interface User {
 
 interface SquaresPickingPageWrapperProps {
   user: User;
+  isAdmin?: boolean;
   grid: (Square | null)[][];
   userSquareCount: number;
   maxSquaresPerUser: number;
@@ -20,6 +21,7 @@ interface SquaresPickingPageWrapperProps {
 
 export function SquaresPickingPageWrapper({
   user,
+  isAdmin,
   grid,
   userSquareCount,
   maxSquaresPerUser,
@@ -27,7 +29,7 @@ export function SquaresPickingPageWrapper({
 }: SquaresPickingPageWrapperProps) {
   return (
     <>
-      <Header user={user} />
+      <Header user={user} isAdmin={isAdmin} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

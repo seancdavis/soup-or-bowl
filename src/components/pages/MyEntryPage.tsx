@@ -46,9 +46,9 @@ export function MyEntryPage({ user, entry, isEditing = false, isAdmin }: MyEntry
               <p className="text-primary-400">
                 {entry
                   ? isEditing
-                    ? "Update your soup or bowl competition entry"
-                    : "Manage your soup or bowl competition entry"
-                  : "Enter the soup or bowl competition"}
+                    ? "Update your SoupOrBowl competition entry"
+                    : "Manage your SoupOrBowl competition entry"
+                  : "Enter the SoupOrBowl competition"}
               </p>
             </div>
           </div>

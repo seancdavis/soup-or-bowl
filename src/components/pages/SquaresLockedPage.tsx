@@ -19,6 +19,7 @@ interface WinnerInfo {
 
 interface SquaresLockedPageProps {
   user: User;
+  isAdmin?: boolean;
   grid: (Square | null)[][];
   rowNumbers: number[];
   colNumbers: number[];
@@ -34,6 +35,7 @@ interface SquaresLockedPageProps {
 
 export function SquaresLockedPage({
   user,
+  isAdmin,
   grid,
   rowNumbers,
   colNumbers,
@@ -53,7 +55,7 @@ export function SquaresLockedPage({
 
   return (
     <>
-      <Header user={user} />
+      <Header user={user} isAdmin={isAdmin} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

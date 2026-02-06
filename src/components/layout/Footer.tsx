@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="py-8 border-t border-primary-800/50">
       <Container size="xl">
         <p className="text-sm text-primary-400 text-center">
-          &copy; {year} Soup or Bowl. All rights reserved.
+          &copy; {year} SoupOrBowl. All rights reserved.
         </p>
       </Container>
     </footer>

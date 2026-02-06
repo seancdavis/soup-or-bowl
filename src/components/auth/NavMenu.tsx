@@ -59,6 +59,13 @@ export function NavMenu({ isAdmin }: NavMenuProps) {
                 <Settings className="w-4 h-4 text-primary-500" />
                 Voting Admin
               </a>
+              <a
+                href="/squares/admin"
+                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+              >
+                <Settings className="w-4 h-4 text-primary-500" />
+                Squares Admin
+              </a>
             </>
           )}
 

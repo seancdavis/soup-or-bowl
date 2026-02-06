@@ -69,7 +69,7 @@ export function AdminSquaresPage({
 
   return (
     <>
-      <Header user={user} />
+      <Header user={user} isAdmin />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

@@ -1,4 +1,4 @@
-import { Soup, Plus, Pencil } from "lucide-react";
+import { Grid3X3, Plus, Pencil } from "lucide-react";
 import { PageBackground, HeroBrand, Button } from "../ui";
 
 interface HeroProps {
@@ -29,10 +29,10 @@ export function Hero({ hasEntry = false }: HeroProps) {
               {hasEntry ? "Edit My Entry" : "Submit Your Entry"}
             </Button>
           </a>
-          <a href="/entries">
+          <a href="/squares">
             <Button variant="secondary" size="lg">
-              <Soup className="w-5 h-5" />
-              View All Entries
+              <Grid3X3 className="w-5 h-5" />
+              Play Squares Game
             </Button>
           </a>
         </div>

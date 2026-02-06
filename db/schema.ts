@@ -27,7 +27,7 @@ export type ApprovedUser = typeof approvedUsers.$inferSelect;
 export type NewApprovedUser = typeof approvedUsers.$inferInsert;
 
 /**
- * Soup or bowl competition entries - each user can have one entry.
+ * SoupOrBowl competition entries - each user can have one entry.
  */
 export const entries = pgTable("entries", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),

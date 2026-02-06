@@ -26,6 +26,6 @@ const revealEntries = await getRevealEntriesSetting();
 const message = Astro.url.searchParams.get("message");
 ---
 
-<Layout title="Admin - All Entries - Soup or Bowl 2026">
+<Layout title="Admin - All Entries - SoupOrBowl 2026">
   <AdminEntriesPage user={user} entries={entries} revealEntries={revealEntries} message={message} client:load />
 </Layout>

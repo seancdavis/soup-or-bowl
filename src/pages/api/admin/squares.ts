@@ -5,6 +5,7 @@ import {
   setSquaresLockedSetting,
   setMaxSquaresPerUserSetting,
   setFinalScoreSetting,
+  getMaxSquaresPerUserSetting,
 } from "../../../lib/settings";
 import {
   generateAxisNumbers,
@@ -13,6 +14,11 @@ import {
   clearAllScores,
   claimSquare,
   getSquare,
+  adminReleaseSquare,
+  releaseSquaresByUser,
+  getAllSquares,
+  buildGrid,
+  countSquaresByUser,
   upsertPrediction,
   deletePrediction,
   clearAllPredictions,
@@ -20,6 +26,168 @@ import {
 import { logger } from "../../../lib/logger";
 
 const log = logger.scope("SQUARES-ADMIN");
+
+/**
+ * Helper to verify admin auth and return user or error response.
+ */
+async function verifyAdmin(request: Request) {
+  const auth = await getUserWithApproval(request);
+  if (!auth) return { error: "unauthenticated" as const };
+  if (!auth.isApproved) return { error: "unapproved" as const };
+  if (!auth.isAdmin) return { error: "not_admin" as const };
+  return { user: auth.user };
+}
+
+/**
+ * GET /api/admin/squares
+ * Returns grid state for admin proxy picking (JSON API).
+ */
+export const GET: APIRoute = async ({ request }) => {
+  const result = await verifyAdmin(request);
+  if ("error" in result) {
+    return new Response(JSON.stringify({ error: result.error }), {
+      status: result.error === "unauthenticated" ? 401 : result.error === "unapproved" ? 403 : 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const [allSquares, maxSquaresPerUser] = await Promise.all([
+    getAllSquares(),
+    getMaxSquaresPerUserSetting(),
+  ]);
+
+  const grid = buildGrid(allSquares);
+
+  return new Response(
+    JSON.stringify({ grid, maxSquaresPerUser }),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+};
+
+/**
+ * PUT /api/admin/squares
+ * JSON API for admin proxy operations (claim, release, release_all_by_user).
+ */
+export const PUT: APIRoute = async ({ request }) => {
+  const result = await verifyAdmin(request);
+  if ("error" in result) {
+    return new Response(JSON.stringify({ error: result.error }), {
+      status: result.error === "unauthenticated" ? 401 : result.error === "unapproved" ? 403 : 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const body = await request.json();
+  const { action } = body;
+
+  if (action === "proxy_claim") {
+    const { row, col, proxyName } = body;
+
+    if (!proxyName || typeof row !== "number" || typeof col !== "number") {
+      return new Response(JSON.stringify({ error: "Invalid data" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (row < 0 || row > 9 || col < 0 || col > 9) {
+      return new Response(JSON.stringify({ error: "Coordinates out of range" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const existing = await getSquare(row, col);
+    if (existing) {
+      return new Response(
+        JSON.stringify({ error: "Square already taken", square: existing }),
+        { status: 409, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const proxyEmail = `proxy_${proxyName.toLowerCase().replace(/\s+/g, "_")}@proxy.local`;
+
+    // Check max squares for this proxy
+    const proxyCount = await countSquaresByUser(proxyEmail);
+    const maxSquares = await getMaxSquaresPerUserSetting();
+    if (proxyCount >= maxSquares) {
+      return new Response(
+        JSON.stringify({ error: `Proxy has reached the maximum of ${maxSquares} squares` }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const newSquare = await claimSquare(row, col, proxyEmail, proxyName, null);
+    if (!newSquare) {
+      return new Response(JSON.stringify({ error: "Failed to claim square" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    log.info("Proxy square claimed:", `(${row},${col})`, "for:", proxyName, "by:", result.user.email);
+
+    return new Response(
+      JSON.stringify({ success: true, square: newSquare }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  if (action === "proxy_release") {
+    const { row, col } = body;
+
+    if (typeof row !== "number" || typeof col !== "number") {
+      return new Response(JSON.stringify({ error: "Invalid coordinates" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const released = await adminReleaseSquare(row, col);
+    if (!released) {
+      return new Response(JSON.stringify({ error: "Square not found" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    log.info("Admin released square:", `(${row},${col})`, "by:", result.user.email);
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (action === "release_all_by_user") {
+    const { proxyName } = body;
+
+    if (!proxyName) {
+      return new Response(JSON.stringify({ error: "Proxy name required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const proxyEmail = `proxy_${proxyName.toLowerCase().replace(/\s+/g, "_")}@proxy.local`;
+    const count = await releaseSquaresByUser(proxyEmail);
+
+    log.info("Admin released", count, "squares for proxy:", proxyName, "by:", result.user.email);
+
+    return new Response(
+      JSON.stringify({ success: true, releasedCount: count }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  return new Response(JSON.stringify({ error: "Invalid action" }), {
+    status: 400,
+    headers: { "Content-Type": "application/json" },
+  });
+};
 
 export const POST: APIRoute = async ({ request, redirect }) => {
   // Verify authentication, approval, and admin status
@@ -82,30 +250,6 @@ export const POST: APIRoute = async ({ request, redirect }) => {
         auth.user.email
       );
     }
-    return redirect(returnTo, 302);
-  }
-
-  if (action === "proxy_claim") {
-    const proxyName = formData.get("proxy_name")?.toString();
-    const proxyRow = parseInt(formData.get("proxy_row")?.toString() || "-1", 10);
-    const proxyCol = parseInt(formData.get("proxy_col")?.toString() || "-1", 10);
-
-    if (!proxyName || proxyRow < 0 || proxyRow > 9 || proxyCol < 0 || proxyCol > 9) {
-      log.warn("Invalid proxy claim data");
-      return redirect(returnTo, 302);
-    }
-
-    // Check if already taken
-    const existing = await getSquare(proxyRow, proxyCol);
-    if (existing) {
-      log.warn("Proxy claim failed - square already taken:", `(${proxyRow},${proxyCol})`);
-      return redirect(returnTo, 302);
-    }
-
-    // Use a proxy email format that won't conflict with real users
-    const proxyEmail = `proxy_${proxyName.toLowerCase().replace(/\s+/g, "_")}@proxy.local`;
-    await claimSquare(proxyRow, proxyCol, proxyEmail, proxyName, null);
-    log.info("Proxy square claimed:", `(${proxyRow},${proxyCol})`, "for:", proxyName, "by:", auth.user.email);
     return redirect(returnTo, 302);
   }
 

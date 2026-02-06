@@ -108,6 +108,38 @@ export async function releaseSquare(
 }
 
 /**
+ * Admin release: release a square regardless of ownership.
+ */
+export async function adminReleaseSquare(
+  row: number,
+  col: number
+): Promise<boolean> {
+  const result = await db
+    .delete(squares)
+    .where(
+      and(
+        eq(squares.row, row),
+        eq(squares.col, col)
+      )
+    )
+    .returning();
+
+  return result.length > 0;
+}
+
+/**
+ * Release all squares claimed by a specific user/proxy email.
+ */
+export async function releaseSquaresByUser(userEmail: string): Promise<number> {
+  const result = await db
+    .delete(squares)
+    .where(eq(squares.userEmail, userEmail))
+    .returning();
+
+  return result.length;
+}
+
+/**
  * Get all axis numbers.
  */
 export async function getAxisNumbers(): Promise<{

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Header, Footer } from "../layout";
 import { Container, PageBackground, Card, Button, ConfirmDialog } from "../ui";
+import { AdminProxyGridPicker } from "../squares";
 import type { Square, SquaresScore } from "../../db";
 import type { ScorePrediction } from "../../lib/squares";
 
@@ -295,65 +296,16 @@ export function AdminSquaresPage({
               <UserPlus className="w-5 h-5 text-gold-400" />
               <h2 className="text-lg font-semibold text-white">Proxy Picks</h2>
             </div>
-            <p className="text-sm text-primary-400 mb-4">
-              Claim squares on behalf of someone who isn't using the app. Enter their name and pick coordinates.
-            </p>
 
             {squaresLocked ? (
               <div className="p-4 bg-primary-800/50 rounded-lg text-primary-400 text-sm">
                 Game is locked. Unlock the game to make proxy picks.
               </div>
             ) : (
-              <form
-                action="/api/admin/squares"
-                method="POST"
-                className="space-y-4"
-              >
-                <input type="hidden" name="action" value="proxy_claim" />
-                <input type="hidden" name="return_to" value="/squares/admin" />
-
-                <div>
-                  <label className="text-white text-sm font-medium mb-1 block">
-                    Player Name
-                  </label>
-                  <input
-                    type="text"
-                    name="proxy_name"
-                    required
-                    placeholder="e.g. Uncle Dave"
-                    className="w-full max-w-xs px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white placeholder-primary-500"
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-end gap-4">
-                  <div>
-                    <label className="text-white text-sm font-medium mb-1 block">Row (0-9)</label>
-                    <input
-                      type="number"
-                      name="proxy_row"
-                      min="0"
-                      max="9"
-                      required
-                      className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-white text-sm font-medium mb-1 block">Col (0-9)</label>
-                    <input
-                      type="number"
-                      name="proxy_col"
-                      min="0"
-                      max="9"
-                      required
-                      className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
-                    />
-                  </div>
-                  <Button type="submit" variant="primary" size="sm">
-                    <UserPlus className="w-4 h-4" />
-                    Claim Square
-                  </Button>
-                </div>
-              </form>
+              <AdminProxyGridPicker
+                initialGrid={grid}
+                maxSquaresPerUser={maxSquaresPerUser}
+              />
             )}
           </Card>
 

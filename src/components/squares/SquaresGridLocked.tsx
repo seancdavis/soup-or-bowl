@@ -180,11 +180,50 @@ export function SquaresGridLocked({
                     ) : (
                       <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary-600/50"></div>
                     )}
-                    {/* Winner badge */}
-                    {isWinner && (
-                      <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-4 sm:h-4 bg-gold-400 rounded-full flex items-center justify-center">
-                        <Trophy className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-primary-950" />
+                    {/* Quarter winner badges */}
+                    {isWinner && winningQuarters.length === 1 && (
+                      <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <span className="text-[7px] sm:text-[9px] font-black text-primary-950 leading-none">{winningQuarters[0]}</span>
                       </div>
+                    )}
+                    {isWinner && winningQuarters.length === 2 && (
+                      <>
+                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                          <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[0]}</span>
+                        </div>
+                        <div className="absolute -bottom-0.5 -left-0.5 sm:-bottom-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                          <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[1]}</span>
+                        </div>
+                      </>
+                    )}
+                    {isWinner && winningQuarters.length === 3 && (
+                      <>
+                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                          <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[0]}</span>
+                        </div>
+                        <div className="absolute -top-0.5 -left-0.5 sm:-top-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                          <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[1]}</span>
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                          <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[2]}</span>
+                        </div>
+                      </>
+                    )}
+                    {isWinner && winningQuarters.length >= 4 && (
+                      <>
+                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                          <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[0]}</span>
+                        </div>
+                        <div className="absolute -top-0.5 -left-0.5 sm:-top-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                          <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[1]}</span>
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                          <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[2]}</span>
+                        </div>
+                        <div className="absolute -bottom-0.5 -left-0.5 sm:-bottom-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                          <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[3]}</span>
+                        </div>
+                      </>
                     )}
                   </div>
                 );
@@ -202,9 +241,9 @@ export function SquaresGridLocked({
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-gold-500 border-2 border-gold-400 rounded relative">
-            <Trophy className="w-2 h-2 text-primary-950 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            <span className="text-[7px] font-black text-primary-950 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">Q</span>
           </div>
-          <span>Winner</span>
+          <span>Quarter Winner</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-primary-800/50 border border-primary-700 rounded"></div>

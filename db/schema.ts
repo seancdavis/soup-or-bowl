@@ -65,6 +65,10 @@ export const SETTING_KEYS = {
   VOTING_ACTIVE: "voting_active",
   VOTING_LOCKED: "voting_locked",
   REVEAL_RESULTS: "reveal_results",
+  SQUARES_LOCKED: "squares_locked",
+  MAX_SQUARES_PER_USER: "max_squares_per_user",
+  FINAL_SEAHAWKS_SCORE: "final_seahawks_score",
+  FINAL_PATRIOTS_SCORE: "final_patriots_score",
 } as const;
 
 /**
@@ -85,3 +89,73 @@ export const votes = pgTable("votes", {
 // Type inference for votes
 export type Vote = typeof votes.$inferSelect;
 export type NewVote = typeof votes.$inferInsert;
+
+/**
+ * Squares game - 10x10 grid for Super Bowl betting.
+ * Each square is identified by row (0-9) and col (0-9).
+ */
+export const squares = pgTable("squares", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  row: integer().notNull(), // 0-9
+  col: integer().notNull(), // 0-9
+  userEmail: varchar("user_email", { length: 255 }).notNull(),
+  userName: varchar("user_name", { length: 255 }),
+  userImage: varchar("user_image", { length: 255 }),
+  claimedAt: timestamp("claimed_at").defaultNow(),
+});
+
+// Type inference for squares
+export type Square = typeof squares.$inferSelect;
+export type NewSquare = typeof squares.$inferInsert;
+
+/**
+ * Squares axis numbers - stores the randomly generated 0-9 numbers for each axis.
+ * Generated when admin locks the game.
+ */
+export const squaresAxisNumbers = pgTable("squares_axis_numbers", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  axis: varchar({ length: 10 }).notNull(), // "row" or "col"
+  position: integer().notNull(), // 0-9
+  value: integer().notNull(), // 0-9 (the randomly assigned number)
+  generatedAt: timestamp("generated_at").defaultNow(),
+});
+
+// Type inference for axis numbers
+export type SquaresAxisNumber = typeof squaresAxisNumbers.$inferSelect;
+export type NewSquaresAxisNumber = typeof squaresAxisNumbers.$inferInsert;
+
+/**
+ * Squares scores - stores the team scores for each quarter.
+ */
+export const squaresScores = pgTable("squares_scores", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  quarter: integer().notNull(), // 1-4
+  seahawksScore: integer("seahawks_score"),
+  patriotsScore: integer("patriots_score"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Type inference for scores
+export type SquaresScore = typeof squaresScores.$inferSelect;
+export type NewSquaresScore = typeof squaresScores.$inferInsert;
+
+/**
+ * Score predictions - players guess the final score of the game.
+ * Winner is the person with the lowest combined score difference.
+ * Supports proxy predictions for non-registered users.
+ */
+export const scorePredictions = pgTable("score_predictions", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userEmail: varchar("user_email", { length: 255 }).notNull(),
+  userName: varchar("user_name", { length: 255 }),
+  seahawksScore: integer("seahawks_score").notNull(),
+  patriotsScore: integer("patriots_score").notNull(),
+  isProxy: boolean("is_proxy").notNull().default(false),
+  createdBy: varchar("created_by", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Type inference for score predictions
+export type ScorePrediction = typeof scorePredictions.$inferSelect;
+export type NewScorePrediction = typeof scorePredictions.$inferInsert;

@@ -13,7 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Header, Footer } from "../layout";
-import { Container, PageBackground, Card, Button } from "../ui";
+import { Container, PageBackground, Card, Button, ConfirmDialog } from "../ui";
 import type { Entry, Vote as VoteType } from "../../db";
 
 interface User {
@@ -106,27 +106,38 @@ export function AdminVotingPage({
                       : "Voting is closed. The voting page is inaccessible."}
                   </p>
                 </div>
-                <form action="/api/admin/settings" method="POST">
-                  <input type="hidden" name="action" value="toggle_voting_active" />
-                  <input type="hidden" name="return_to" value="/vote/admin" />
-                  <Button
-                    type="submit"
-                    variant={votingActive ? "primary" : "secondary"}
-                    size="sm"
-                  >
-                    {votingActive ? (
-                      <>
-                        <Vote className="w-4 h-4" />
-                        Active
-                      </>
-                    ) : (
-                      <>
-                        <Vote className="w-4 h-4" />
-                        Inactive
-                      </>
-                    )}
-                  </Button>
-                </form>
+                <ConfirmDialog
+                  title={votingActive ? "Close Voting?" : "Open Voting?"}
+                  message={
+                    votingActive
+                      ? "This will close the voting page. Users will no longer be able to access or submit votes."
+                      : "This will open the voting page. Users will be able to access and submit votes."
+                  }
+                  confirmLabel={votingActive ? "Close Voting" : "Open Voting"}
+                  variant="warning"
+                >
+                  <form action="/api/admin/settings" method="POST">
+                    <input type="hidden" name="action" value="toggle_voting_active" />
+                    <input type="hidden" name="return_to" value="/vote/admin" />
+                    <Button
+                      type="submit"
+                      variant={votingActive ? "primary" : "secondary"}
+                      size="sm"
+                    >
+                      {votingActive ? (
+                        <>
+                          <Vote className="w-4 h-4" />
+                          Active
+                        </>
+                      ) : (
+                        <>
+                          <Vote className="w-4 h-4" />
+                          Inactive
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </ConfirmDialog>
               </div>
 
               {/* Voting Locked Toggle */}
@@ -139,27 +150,38 @@ export function AdminVotingPage({
                       : "Votes are editable. Users can submit and update their votes."}
                   </p>
                 </div>
-                <form action="/api/admin/settings" method="POST">
-                  <input type="hidden" name="action" value="toggle_voting_locked" />
-                  <input type="hidden" name="return_to" value="/vote/admin" />
-                  <Button
-                    type="submit"
-                    variant={votingLocked ? "primary" : "secondary"}
-                    size="sm"
-                  >
-                    {votingLocked ? (
-                      <>
-                        <Lock className="w-4 h-4" />
-                        Locked
-                      </>
-                    ) : (
-                      <>
-                        <Unlock className="w-4 h-4" />
-                        Unlocked
-                      </>
-                    )}
-                  </Button>
-                </form>
+                <ConfirmDialog
+                  title={votingLocked ? "Unlock Votes?" : "Lock Votes?"}
+                  message={
+                    votingLocked
+                      ? "This will allow users to edit or change their votes again."
+                      : "This will lock all votes. Users will be able to view their votes but not change them."
+                  }
+                  confirmLabel={votingLocked ? "Unlock Votes" : "Lock Votes"}
+                  variant="warning"
+                >
+                  <form action="/api/admin/settings" method="POST">
+                    <input type="hidden" name="action" value="toggle_voting_locked" />
+                    <input type="hidden" name="return_to" value="/vote/admin" />
+                    <Button
+                      type="submit"
+                      variant={votingLocked ? "primary" : "secondary"}
+                      size="sm"
+                    >
+                      {votingLocked ? (
+                        <>
+                          <Lock className="w-4 h-4" />
+                          Locked
+                        </>
+                      ) : (
+                        <>
+                          <Unlock className="w-4 h-4" />
+                          Unlocked
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </ConfirmDialog>
               </div>
 
               {/* Reveal Results Toggle */}
@@ -172,27 +194,38 @@ export function AdminVotingPage({
                       : "Results are hidden from users."}
                   </p>
                 </div>
-                <form action="/api/admin/settings" method="POST">
-                  <input type="hidden" name="action" value="toggle_reveal_results" />
-                  <input type="hidden" name="return_to" value="/vote/admin" />
-                  <Button
-                    type="submit"
-                    variant={revealResults ? "primary" : "secondary"}
-                    size="sm"
-                  >
-                    {revealResults ? (
-                      <>
-                        <Eye className="w-4 h-4" />
-                        Visible
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="w-4 h-4" />
-                        Hidden
-                      </>
-                    )}
-                  </Button>
-                </form>
+                <ConfirmDialog
+                  title={revealResults ? "Hide Results?" : "Reveal Results?"}
+                  message={
+                    revealResults
+                      ? "This will hide the voting results from the entries page."
+                      : "This will reveal the voting winner on the entries page for all users to see."
+                  }
+                  confirmLabel={revealResults ? "Hide Results" : "Reveal Results"}
+                  variant="warning"
+                >
+                  <form action="/api/admin/settings" method="POST">
+                    <input type="hidden" name="action" value="toggle_reveal_results" />
+                    <input type="hidden" name="return_to" value="/vote/admin" />
+                    <Button
+                      type="submit"
+                      variant={revealResults ? "primary" : "secondary"}
+                      size="sm"
+                    >
+                      {revealResults ? (
+                        <>
+                          <Eye className="w-4 h-4" />
+                          Visible
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="w-4 h-4" />
+                          Hidden
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </ConfirmDialog>
               </div>
             </div>
           </Card>

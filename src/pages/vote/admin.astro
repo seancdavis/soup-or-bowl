@@ -40,5 +40,6 @@ const message = Astro.url.searchParams.get("message");
     votingLocked={votingSettings.votingLocked}
     revealResults={votingSettings.revealResults}
     message={message}
+    client:load
   />
 </Layout>

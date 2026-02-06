@@ -1,4 +1,5 @@
 export { AdminEntriesPage } from "./AdminEntriesPage";
+export { AdminSquaresPage } from "./AdminSquaresPage";
 export { AdminVotingPage } from "./AdminVotingPage";
 export { EntriesPage } from "./EntriesPage";
 export { HomePage } from "./HomePage";
@@ -6,5 +7,7 @@ export { LoginPage } from "./LoginPage";
 export { MyEntryPage } from "./MyEntryPage";
 export { NotFoundPage } from "./NotFoundPage";
 export { ProfilePage } from "./ProfilePage";
+export { SquaresLockedPage } from "./SquaresLockedPage";
+export { SquaresPickingPageWrapper } from "./SquaresPickingPageWrapper";
 export { UnauthorizedPage } from "./UnauthorizedPage";
 export { VotingPage } from "./VotingPage";

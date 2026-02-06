@@ -2,6 +2,7 @@ export { Avatar } from "./Avatar";
 export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { Card } from "./Card";
+export { ConfirmDialog } from "./ConfirmDialog";
 export { Container } from "./Container";
 export { Divider } from "./Divider";
 export { EventBadge } from "./EventBadge";

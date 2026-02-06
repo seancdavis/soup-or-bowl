@@ -5,13 +5,14 @@ import {
   EyeOff,
   Settings,
   Vote,
+  Grid3X3,
   UserPlus,
   Check,
   AlertCircle,
   Trash2,
 } from "lucide-react";
 import { Header, Footer } from "../layout";
-import { Container, PageBackground, Card, Button } from "../ui";
+import { Container, PageBackground, Card, Button, ConfirmDialog } from "../ui";
 import { EntryCard } from "../entries";
 import type { Entry } from "../../db";
 
@@ -77,12 +78,20 @@ export function AdminEntriesPage({ user, entries, revealEntries, message }: Admi
                 </p>
               </div>
             </div>
-            <a href="/vote/admin">
-              <Button variant="secondary" size="sm">
-                <Vote className="w-4 h-4" />
-                Voting Admin
-              </Button>
-            </a>
+            <div className="flex items-center gap-2">
+              <a href="/squares/admin">
+                <Button variant="secondary" size="sm">
+                  <Grid3X3 className="w-4 h-4" />
+                  Squares Admin
+                </Button>
+              </a>
+              <a href="/vote/admin">
+                <Button variant="secondary" size="sm">
+                  <Vote className="w-4 h-4" />
+                  Voting Admin
+                </Button>
+              </a>
+            </div>
           </div>
 
           {/* Settings Card */}
@@ -100,22 +109,33 @@ export function AdminEntriesPage({ user, entries, revealEntries, message }: Admi
                     : "Entry titles and descriptions are hidden from other users."}
                 </p>
               </div>
-              <form action="/api/admin/settings" method="POST">
-                <input type="hidden" name="action" value="toggle_reveal_entries" />
-                <Button type="submit" variant={revealEntries ? "primary" : "secondary"} size="sm">
-                  {revealEntries ? (
-                    <>
-                      <Eye className="w-4 h-4" />
-                      Visible
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff className="w-4 h-4" />
-                      Hidden
-                    </>
-                  )}
-                </Button>
-              </form>
+              <ConfirmDialog
+                  title={revealEntries ? "Hide Entry Details?" : "Reveal Entry Details?"}
+                  message={
+                    revealEntries
+                      ? "This will hide entry titles and descriptions from other users."
+                      : "This will make all entry titles and descriptions visible to all users."
+                  }
+                  confirmLabel={revealEntries ? "Hide Entries" : "Reveal Entries"}
+                  variant="warning"
+                >
+                  <form action="/api/admin/settings" method="POST">
+                    <input type="hidden" name="action" value="toggle_reveal_entries" />
+                    <Button type="submit" variant={revealEntries ? "primary" : "secondary"} size="sm">
+                      {revealEntries ? (
+                        <>
+                          <Eye className="w-4 h-4" />
+                          Visible
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="w-4 h-4" />
+                          Hidden
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </ConfirmDialog>
             </div>
           </Card>
 

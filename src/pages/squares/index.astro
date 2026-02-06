@@ -1,0 +1,74 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { SquaresLockedPage } from "../../components/pages";
+import { SquaresPickingPageWrapper } from "../../components/pages/SquaresPickingPageWrapper";
+import { getUserWithApproval } from "../../lib/auth";
+import { getSquaresSettings, getFinalScoreSetting } from "../../lib/settings";
+import {
+  getAllSquares,
+  getAxisNumbers,
+  getScores,
+  calculateWinners,
+  buildGrid,
+  countSquaresByUser,
+  getPredictionByEmail,
+  getAllPredictions,
+  calculatePredictionResults,
+} from "../../lib/squares";
+
+const auth = await getUserWithApproval(Astro.request);
+
+if (!auth) {
+  return Astro.redirect("/login");
+}
+
+if (!auth.isApproved) {
+  return Astro.redirect("/unauthorized");
+}
+
+const { user } = auth;
+
+const [settings, allSquares, axisNumbers, scores, winners, userPrediction, allPredictions, actualFinalScore] = await Promise.all([
+  getSquaresSettings(),
+  getAllSquares(),
+  getAxisNumbers(),
+  getScores(),
+  calculateWinners(),
+  getPredictionByEmail(user.email),
+  getAllPredictions(),
+  getFinalScoreSetting(),
+]);
+
+const grid = buildGrid(allSquares);
+const userSquareCount = await countSquaresByUser(user.email);
+const predictionResults = calculatePredictionResults(
+  allPredictions,
+  actualFinalScore.seahawks,
+  actualFinalScore.patriots,
+);
+---
+
+<Layout title="Squares - Soup or Bowl 2026">
+  {settings.squaresLocked ? (
+    <SquaresLockedPage
+      user={user}
+      grid={grid}
+      rowNumbers={axisNumbers.rows}
+      colNumbers={axisNumbers.cols}
+      scores={scores}
+      winners={winners}
+      userPrediction={userPrediction}
+      predictionResults={predictionResults}
+      actualFinalScore={actualFinalScore}
+    />
+  ) : (
+    <SquaresPickingPageWrapper
+      user={user}
+      grid={grid}
+      userSquareCount={userSquareCount}
+      maxSquaresPerUser={settings.maxSquaresPerUser}
+      userPrediction={userPrediction}
+      client:load
+    />
+  )}
+</Layout>

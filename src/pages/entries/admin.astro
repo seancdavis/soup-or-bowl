@@ -27,5 +27,5 @@ const message = Astro.url.searchParams.get("message");
 ---
 
 <Layout title="Admin - All Entries - Soup or Bowl 2026">
-  <AdminEntriesPage user={user} entries={entries} revealEntries={revealEntries} message={message} />
+  <AdminEntriesPage user={user} entries={entries} revealEntries={revealEntries} message={message} client:load />
 </Layout>

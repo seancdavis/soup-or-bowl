@@ -180,47 +180,47 @@ export function SquaresGridLocked({
                     ) : (
                       <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary-600/50"></div>
                     )}
-                    {/* Quarter winner badges */}
+                    {/* Quarter winner badges — reading order: top-left, top-right, bottom-left, bottom-right */}
                     {isWinner && winningQuarters.length === 1 && (
-                      <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 bg-gold-400 rounded-full flex items-center justify-center">
+                      <div className="absolute -top-0.5 -left-0.5 sm:-top-1 sm:-left-1 w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 bg-gold-400 rounded-full flex items-center justify-center">
                         <span className="text-[7px] sm:text-[9px] font-black text-primary-950 leading-none">{winningQuarters[0]}</span>
                       </div>
                     )}
                     {isWinner && winningQuarters.length === 2 && (
                       <>
-                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <div className="absolute -top-0.5 -left-0.5 sm:-top-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
                           <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[0]}</span>
                         </div>
-                        <div className="absolute -bottom-0.5 -left-0.5 sm:-bottom-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
                           <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[1]}</span>
                         </div>
                       </>
                     )}
                     {isWinner && winningQuarters.length === 3 && (
                       <>
-                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <div className="absolute -top-0.5 -left-0.5 sm:-top-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
                           <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[0]}</span>
                         </div>
-                        <div className="absolute -top-0.5 -left-0.5 sm:-top-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
                           <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[1]}</span>
                         </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <div className="absolute -bottom-0.5 -left-0.5 sm:-bottom-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
                           <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[2]}</span>
                         </div>
                       </>
                     )}
                     {isWinner && winningQuarters.length >= 4 && (
                       <>
-                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <div className="absolute -top-0.5 -left-0.5 sm:-top-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
                           <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[0]}</span>
                         </div>
-                        <div className="absolute -top-0.5 -left-0.5 sm:-top-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
                           <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[1]}</span>
                         </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <div className="absolute -bottom-0.5 -left-0.5 sm:-bottom-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
                           <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[2]}</span>
                         </div>
-                        <div className="absolute -bottom-0.5 -left-0.5 sm:-bottom-1 sm:-left-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
+                        <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gold-400 rounded-full flex items-center justify-center">
                           <span className="text-[6px] sm:text-[8px] font-black text-primary-950 leading-none">{winningQuarters[3]}</span>
                         </div>
                       </>

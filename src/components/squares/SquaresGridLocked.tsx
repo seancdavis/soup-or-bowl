@@ -61,7 +61,7 @@ export function SquaresGridLocked({
                 }`}
               >
                 <div className="text-xs text-primary-400 mb-1">Q{quarter}</div>
-                {score?.seahawksScore !== null && score?.patriotsScore !== null ? (
+                {score && score.seahawksScore !== null && score.patriotsScore !== null ? (
                   <>
                     <div className="text-white font-medium">
                       SEA {score.seahawksScore} - {score.patriotsScore} NE

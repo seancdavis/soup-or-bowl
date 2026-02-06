@@ -7,9 +7,10 @@ interface HeaderProps {
     email: string;
     image: string | null;
   } | null;
+  isAdmin?: boolean;
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, isAdmin }: HeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-primary-950/80 backdrop-blur-md border-b border-primary-800/50">
       <Container size="xl">
@@ -23,7 +24,7 @@ export function Header({ user }: HeaderProps) {
 
           {user && (
             <div className="flex items-center gap-3">
-              <NavMenu />
+              <NavMenu isAdmin={isAdmin} />
               <UserMenu user={user} />
             </div>
           )}

@@ -10,12 +10,13 @@ interface User {
 interface HomePageProps {
   user: User;
   hasEntry?: boolean;
+  isAdmin?: boolean;
 }
 
-export function HomePage({ user, hasEntry = false }: HomePageProps) {
+export function HomePage({ user, hasEntry = false, isAdmin }: HomePageProps) {
   return (
     <>
-      <Header user={user} />
+      <Header user={user} isAdmin={isAdmin} />
       <main className="pt-16">
         <Hero hasEntry={hasEntry} />
         <SaveTheDate />

@@ -8,6 +8,9 @@ import {
   Unlock,
   Settings,
   Users,
+  UserPlus,
+  Check,
+  AlertCircle,
 } from "lucide-react";
 import { Header, Footer } from "../layout";
 import { Container, PageBackground, Card, Button, ConfirmDialog } from "../ui";
@@ -29,21 +32,35 @@ interface VoteWithEntries {
 interface AdminVotingPageProps {
   user: User;
   votesWithEntries: VoteWithEntries[];
+  entries: Entry[];
   votingActive: boolean;
   votingLocked: boolean;
   revealResults: boolean;
+  message: string | null;
 }
+
+const MESSAGE_MAP: Record<string, { type: "success" | "error"; text: string }> = {
+  proxy_vote_saved: { type: "success", text: "Proxy vote has been saved." },
+  missing_name: { type: "error", text: "Please enter a name for the voter." },
+  incomplete_vote: { type: "error", text: "Please select all three rankings." },
+  duplicate_selections: { type: "error", text: "Each ranking must be a different entry." },
+  invalid_entry: { type: "error", text: "One of the selected entries is invalid." },
+  vote_error: { type: "error", text: "Failed to save vote. Please try again." },
+};
 
 export function AdminVotingPage({
   user,
   votesWithEntries,
+  entries,
   votingActive,
   votingLocked,
   revealResults,
+  message,
 }: AdminVotingPageProps) {
+  const messageInfo = message ? MESSAGE_MAP[message] : null;
   return (
     <>
-      <Header user={user} />
+      <Header user={user} isAdmin />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 
@@ -211,6 +228,138 @@ export function AdminVotingPage({
                 </ConfirmDialog>
               </div>
             </div>
+          </Card>
+
+          {/* Proxy Voting Card */}
+          <Card variant="bordered" className="mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <UserPlus className="w-5 h-5 text-gold-400" />
+              <h2 className="text-lg font-semibold text-white">
+                Proxy Voting
+              </h2>
+            </div>
+
+            <p className="text-sm text-primary-400 mb-6">
+              Submit a vote on behalf of someone at the party who isn't using
+              the app.
+            </p>
+
+            {messageInfo && (
+              <div
+                className={`flex items-center gap-2 p-3 rounded-lg mb-6 ${
+                  messageInfo.type === "success"
+                    ? "bg-green-900/30 text-green-400"
+                    : "bg-red-900/30 text-red-400"
+                }`}
+              >
+                {messageInfo.type === "success" ? (
+                  <Check className="w-4 h-4 flex-shrink-0" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                )}
+                <span className="text-sm">{messageInfo.text}</span>
+              </div>
+            )}
+
+            {entries.length < 3 ? (
+              <div className="text-center py-8">
+                <p className="text-primary-400">
+                  There aren't enough entries to vote yet. At least 3 entries
+                  are needed.
+                </p>
+              </div>
+            ) : (
+              <form action="/api/admin/votes" method="POST">
+                <div className="space-y-6">
+                  {/* Voter Name */}
+                  <div>
+                    <label className="block text-white font-medium mb-3">
+                      Voter Name
+                    </label>
+                    <input
+                      type="text"
+                      name="voter_name"
+                      required
+                      placeholder="Enter the person's name..."
+                      className="w-full px-4 py-3 bg-primary-800 border border-primary-600 rounded-lg text-white placeholder-primary-500 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* 1st Place */}
+                  <div>
+                    <label className="flex items-center gap-2 text-white font-medium mb-3">
+                      <span className="w-6 h-6 rounded-full bg-gold-500 flex items-center justify-center text-primary-950 text-sm font-bold">
+                        1
+                      </span>
+                      First Place (3 points)
+                    </label>
+                    <select
+                      name="first_place"
+                      required
+                      className="w-full px-4 py-3 bg-primary-800 border border-primary-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                    >
+                      <option value="">Select first place...</option>
+                      {entries.map((entry) => (
+                        <option key={entry.id} value={entry.id}>
+                          {entry.title} ({entry.userName || entry.userEmail})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 2nd Place */}
+                  <div>
+                    <label className="flex items-center gap-2 text-white font-medium mb-3">
+                      <span className="w-6 h-6 rounded-full bg-primary-400 flex items-center justify-center text-primary-950 text-sm font-bold">
+                        2
+                      </span>
+                      Second Place (2 points)
+                    </label>
+                    <select
+                      name="second_place"
+                      required
+                      className="w-full px-4 py-3 bg-primary-800 border border-primary-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                    >
+                      <option value="">Select second place...</option>
+                      {entries.map((entry) => (
+                        <option key={entry.id} value={entry.id}>
+                          {entry.title} ({entry.userName || entry.userEmail})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 3rd Place */}
+                  <div>
+                    <label className="flex items-center gap-2 text-white font-medium mb-3">
+                      <span className="w-6 h-6 rounded-full bg-amber-700 flex items-center justify-center text-white text-sm font-bold">
+                        3
+                      </span>
+                      Third Place (1 point)
+                    </label>
+                    <select
+                      name="third_place"
+                      required
+                      className="w-full px-4 py-3 bg-primary-800 border border-primary-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                    >
+                      <option value="">Select third place...</option>
+                      {entries.map((entry) => (
+                        <option key={entry.id} value={entry.id}>
+                          {entry.title} ({entry.userName || entry.userEmail})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex justify-end">
+                  <Button type="submit" variant="primary" size="sm">
+                    <Check className="w-4 h-4" />
+                    Submit Proxy Vote
+                  </Button>
+                </div>
+              </form>
+            )}
           </Card>
 
           {/* Votes List */}

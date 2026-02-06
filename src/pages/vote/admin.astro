@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { AdminVotingPage } from "../../components/pages";
 import { getUserWithApproval } from "../../lib/auth";
 import { getVotesWithEntries } from "../../lib/votes";
+import { getAllEntries } from "../../lib/entries";
 import { getVotingSettings } from "../../lib/settings";
 
 const auth = await getUserWithApproval(Astro.request);
@@ -21,19 +22,24 @@ if (!auth.isAdmin) {
 }
 
 const { user } = auth;
-const [votesWithEntries, votingSettings] = await Promise.all([
+const [votesWithEntries, votingSettings, allEntries] = await Promise.all([
   getVotesWithEntries(),
   getVotingSettings(),
+  getAllEntries(),
 ]);
+
+const message = Astro.url.searchParams.get("message");
 ---
 
 <Layout title="Voting Admin - Soup or Bowl 2026">
   <AdminVotingPage
     user={user}
     votesWithEntries={votesWithEntries}
+    entries={allEntries}
     votingActive={votingSettings.votingActive}
     votingLocked={votingSettings.votingLocked}
     revealResults={votingSettings.revealResults}
+    message={message}
     client:load
   />
 </Layout>

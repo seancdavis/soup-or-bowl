@@ -1,6 +1,6 @@
-import { Grid3X3, ArrowLeft, Trophy, Target, Check } from "lucide-react";
+import { Grid3X3, ArrowLeft, Trophy, Target } from "lucide-react";
 import { Header, Footer } from "../layout";
-import { Container, PageBackground, Card, Button } from "../ui";
+import { Container, PageBackground, Card } from "../ui";
 import { SquaresGridLocked } from "../squares";
 import type { Square, SquaresScore, ScorePrediction } from "../../db";
 
@@ -135,38 +135,10 @@ export function SquaresLockedPage({
                 )}
               </div>
             ) : (
-              <div className="mb-4">
-                <p className="text-sm text-primary-300 mb-3">
-                  You haven't submitted a prediction yet. Guess the final score to compete for the 5th prize!
+              <div className="p-4 bg-primary-800/50 rounded-lg mb-4">
+                <p className="text-sm text-primary-400">
+                  You didn't submit a prediction before the game was locked.
                 </p>
-                <form action="/api/predictions" method="POST" className="flex flex-wrap items-end gap-4">
-                  <div>
-                    <label className="text-green-400 text-sm font-medium mb-1 block">Seahawks</label>
-                    <input
-                      type="number"
-                      name="prediction_seahawks"
-                      min="0"
-                      required
-                      placeholder="--"
-                      className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-red-400 text-sm font-medium mb-1 block">Patriots</label>
-                    <input
-                      type="number"
-                      name="prediction_patriots"
-                      min="0"
-                      required
-                      placeholder="--"
-                      className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
-                    />
-                  </div>
-                  <Button type="submit" variant="primary" size="sm">
-                    <Check className="w-4 h-4" />
-                    Submit Prediction
-                  </Button>
-                </form>
               </div>
             )}
 

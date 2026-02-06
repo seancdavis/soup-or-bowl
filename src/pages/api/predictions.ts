@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getUserWithApproval } from "../../lib/auth";
 import { upsertPrediction } from "../../lib/squares";
+import { getSquaresLockedSetting } from "../../lib/settings";
 import { logger } from "../../lib/logger";
 
 const log = logger.scope("PREDICTIONS");
@@ -15,6 +16,13 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   if (!auth.isApproved) {
     log.warn("Unapproved user tried to submit prediction:", auth.user.email);
     return redirect("/unauthorized", 302);
+  }
+
+  // Check if the game is locked - predictions are locked with the squares game
+  const squaresLocked = await getSquaresLockedSetting();
+  if (squaresLocked) {
+    log.warn("Prediction rejected - game is locked:", auth.user.email);
+    return redirect("/squares?message=game_locked", 302);
   }
 
   // Parse form data

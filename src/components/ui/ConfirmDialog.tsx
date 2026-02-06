@@ -22,6 +22,7 @@ export function ConfirmDialog({
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const confirmedRef = useRef(false);
 
   // Close on escape key
   useEffect(() => {
@@ -51,24 +52,22 @@ export function ConfirmDialog({
     };
   }, [open]);
 
-  const handleTriggerClick = (e: React.MouseEvent<HTMLFormElement>) => {
+  const handleTriggerSubmit = (e: React.FormEvent<HTMLDivElement>) => {
+    // If this submit was triggered by our confirm action, let it through
+    if (confirmedRef.current) {
+      confirmedRef.current = false;
+      return;
+    }
     e.preventDefault();
     // Store the form for later submission
-    formRef.current = e.currentTarget;
+    formRef.current = (e.target as HTMLElement).closest("form") as HTMLFormElement;
     setOpen(true);
   };
 
   const handleConfirm = () => {
     if (formRef.current) {
-      // Create and dispatch a native submit event to bypass our intercept
-      formRef.current.removeEventListener("submit", () => {});
-      // Submit via a hidden button to trigger the native form submit
-      const submitBtn = document.createElement("button");
-      submitBtn.type = "submit";
-      submitBtn.style.display = "none";
-      formRef.current.appendChild(submitBtn);
-      submitBtn.click();
-      submitBtn.remove();
+      confirmedRef.current = true;
+      formRef.current.requestSubmit();
     }
     setOpen(false);
   };
@@ -78,7 +77,7 @@ export function ConfirmDialog({
   return (
     <>
       {/* Wrap children forms - intercept their submit */}
-      <div onSubmitCapture={handleTriggerClick as unknown as React.FormEventHandler<HTMLDivElement>}>
+      <div onSubmitCapture={handleTriggerSubmit}>
         {children}
       </div>
 

@@ -23,8 +23,9 @@ if (!auth.isAdmin) {
 const { user } = auth;
 const entries = await getAllEntries();
 const revealEntries = await getRevealEntriesSetting();
+const message = Astro.url.searchParams.get("message");
 ---
 
 <Layout title="Admin - All Entries - Soup or Bowl 2026">
-  <AdminEntriesPage user={user} entries={entries} revealEntries={revealEntries} />
+  <AdminEntriesPage user={user} entries={entries} revealEntries={revealEntries} message={message} />
 </Layout>

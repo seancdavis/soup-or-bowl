@@ -26,5 +26,5 @@ const revealEntries = await getRevealEntriesSetting();
 ---
 
 <Layout title="Admin - All Entries - Soup or Bowl 2026">
-  <AdminEntriesPage user={user} entries={entries} revealEntries={revealEntries} />
+  <AdminEntriesPage user={user} entries={entries} revealEntries={revealEntries} client:load />
 </Layout>

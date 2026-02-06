@@ -8,7 +8,6 @@ export { MyEntryPage } from "./MyEntryPage";
 export { NotFoundPage } from "./NotFoundPage";
 export { ProfilePage } from "./ProfilePage";
 export { SquaresLockedPage } from "./SquaresLockedPage";
-export { SquaresPickingPage } from "./SquaresPickingPage";
 export { SquaresPickingPageWrapper } from "./SquaresPickingPageWrapper";
 export { UnauthorizedPage } from "./UnauthorizedPage";
 export { VotingPage } from "./VotingPage";

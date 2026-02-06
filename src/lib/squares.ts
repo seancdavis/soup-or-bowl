@@ -4,9 +4,11 @@ import {
   squares,
   squaresAxisNumbers,
   squaresScores,
+  scorePredictions,
   type Square,
   type SquaresAxisNumber,
   type SquaresScore,
+  type ScorePrediction,
 } from "../db";
 
 /**
@@ -311,4 +313,125 @@ export async function clearAllSquares(): Promise<void> {
  */
 export async function clearAllScores(): Promise<void> {
   await db.delete(squaresScores);
+}
+
+// Re-export type for convenience
+export type { ScorePrediction };
+
+/**
+ * Get all score predictions.
+ */
+export async function getAllPredictions(): Promise<ScorePrediction[]> {
+  return await db
+    .select()
+    .from(scorePredictions)
+    .orderBy(scorePredictions.createdAt);
+}
+
+/**
+ * Get a prediction by user email.
+ */
+export async function getPredictionByEmail(email: string): Promise<ScorePrediction | null> {
+  const [prediction] = await db
+    .select()
+    .from(scorePredictions)
+    .where(eq(scorePredictions.userEmail, email))
+    .limit(1);
+
+  return prediction || null;
+}
+
+/**
+ * Create or update a score prediction.
+ */
+export async function upsertPrediction(data: {
+  userEmail: string;
+  userName: string | null;
+  seahawksScore: number;
+  patriotsScore: number;
+  isProxy?: boolean;
+  createdBy?: string;
+}): Promise<ScorePrediction> {
+  const existing = await getPredictionByEmail(data.userEmail);
+
+  if (existing) {
+    const [updated] = await db
+      .update(scorePredictions)
+      .set({
+        seahawksScore: data.seahawksScore,
+        patriotsScore: data.patriotsScore,
+        updatedAt: new Date(),
+      })
+      .where(eq(scorePredictions.userEmail, data.userEmail))
+      .returning();
+    return updated;
+  }
+
+  const [newPrediction] = await db
+    .insert(scorePredictions)
+    .values({
+      userEmail: data.userEmail,
+      userName: data.userName,
+      seahawksScore: data.seahawksScore,
+      patriotsScore: data.patriotsScore,
+      isProxy: data.isProxy || false,
+      createdBy: data.createdBy || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning();
+
+  return newPrediction;
+}
+
+/**
+ * Delete a score prediction by ID.
+ */
+export async function deletePrediction(id: number): Promise<boolean> {
+  const result = await db
+    .delete(scorePredictions)
+    .where(eq(scorePredictions.id, id))
+    .returning();
+
+  return result.length > 0;
+}
+
+/**
+ * Clear all predictions (admin only, for reset).
+ */
+export async function clearAllPredictions(): Promise<void> {
+  await db.delete(scorePredictions);
+}
+
+/**
+ * Calculate prediction results.
+ * Returns predictions sorted by combined score difference (ascending).
+ */
+export function calculatePredictionResults(
+  predictions: ScorePrediction[],
+  actualSeahawks: number | null,
+  actualPatriots: number | null
+): Array<{ prediction: ScorePrediction; diff: number | null }> {
+  if (actualSeahawks === null || actualPatriots === null) {
+    return predictions.map((prediction) => ({ prediction, diff: null }));
+  }
+
+  const results = predictions.map((prediction) => {
+    const seahawksDiff = Math.abs(prediction.seahawksScore - actualSeahawks);
+    const patriotsDiff = Math.abs(prediction.patriotsScore - actualPatriots);
+    return {
+      prediction,
+      diff: seahawksDiff + patriotsDiff,
+    };
+  });
+
+  // Sort by diff ascending (lowest = best)
+  results.sort((a, b) => {
+    if (a.diff === null && b.diff === null) return 0;
+    if (a.diff === null) return 1;
+    if (b.diff === null) return -1;
+    return a.diff - b.diff;
+  });
+
+  return results;
 }

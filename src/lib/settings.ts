@@ -153,3 +153,35 @@ export async function getSquaresSettings(): Promise<{
   ]);
   return { squaresLocked, maxSquaresPerUser };
 }
+
+/**
+ * Get the actual final score for score prediction calculations.
+ */
+export async function getFinalScoreSetting(): Promise<{
+  seahawks: number | null;
+  patriots: number | null;
+}> {
+  const [seahawksStr, patriotsStr] = await Promise.all([
+    getSetting(SETTING_KEYS.FINAL_SEAHAWKS_SCORE),
+    getSetting(SETTING_KEYS.FINAL_PATRIOTS_SCORE),
+  ]);
+  return {
+    seahawks: seahawksStr !== null ? parseInt(seahawksStr, 10) : null,
+    patriots: patriotsStr !== null ? parseInt(patriotsStr, 10) : null,
+  };
+}
+
+/**
+ * Set the actual final score.
+ */
+export async function setFinalScoreSetting(
+  seahawks: number | null,
+  patriots: number | null
+): Promise<void> {
+  if (seahawks !== null) {
+    await setSetting(SETTING_KEYS.FINAL_SEAHAWKS_SCORE, seahawks.toString());
+  }
+  if (patriots !== null) {
+    await setSetting(SETTING_KEYS.FINAL_PATRIOTS_SCORE, patriots.toString());
+  }
+}

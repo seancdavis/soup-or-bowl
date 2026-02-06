@@ -4,12 +4,18 @@ import {
   getSquaresLockedSetting,
   setSquaresLockedSetting,
   setMaxSquaresPerUserSetting,
+  setFinalScoreSetting,
 } from "../../../lib/settings";
 import {
   generateAxisNumbers,
   setScore,
   clearAllSquares,
   clearAllScores,
+  claimSquare,
+  getSquare,
+  upsertPrediction,
+  deletePrediction,
+  clearAllPredictions,
 } from "../../../lib/squares";
 import { logger } from "../../../lib/logger";
 
@@ -79,6 +85,73 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return redirect(returnTo, 302);
   }
 
+  if (action === "proxy_claim") {
+    const proxyName = formData.get("proxy_name")?.toString();
+    const proxyRow = parseInt(formData.get("proxy_row")?.toString() || "-1", 10);
+    const proxyCol = parseInt(formData.get("proxy_col")?.toString() || "-1", 10);
+
+    if (!proxyName || proxyRow < 0 || proxyRow > 9 || proxyCol < 0 || proxyCol > 9) {
+      log.warn("Invalid proxy claim data");
+      return redirect(returnTo, 302);
+    }
+
+    // Check if already taken
+    const existing = await getSquare(proxyRow, proxyCol);
+    if (existing) {
+      log.warn("Proxy claim failed - square already taken:", `(${proxyRow},${proxyCol})`);
+      return redirect(returnTo, 302);
+    }
+
+    // Use a proxy email format that won't conflict with real users
+    const proxyEmail = `proxy_${proxyName.toLowerCase().replace(/\s+/g, "_")}@proxy.local`;
+    await claimSquare(proxyRow, proxyCol, proxyEmail, proxyName, null);
+    log.info("Proxy square claimed:", `(${proxyRow},${proxyCol})`, "for:", proxyName, "by:", auth.user.email);
+    return redirect(returnTo, 302);
+  }
+
+  if (action === "set_final_score") {
+    const seahawksStr = formData.get("final_seahawks_score")?.toString();
+    const patriotsStr = formData.get("final_patriots_score")?.toString();
+    const seahawks = seahawksStr ? parseInt(seahawksStr, 10) : null;
+    const patriots = patriotsStr ? parseInt(patriotsStr, 10) : null;
+
+    await setFinalScoreSetting(seahawks, patriots);
+    log.info("Final score set: Seahawks", seahawks, "Patriots", patriots, "by:", auth.user.email);
+    return redirect(returnTo, 302);
+  }
+
+  if (action === "proxy_prediction") {
+    const predictionName = formData.get("prediction_name")?.toString();
+    const seahawksStr = formData.get("prediction_seahawks")?.toString();
+    const patriotsStr = formData.get("prediction_patriots")?.toString();
+
+    if (!predictionName || !seahawksStr || !patriotsStr) {
+      log.warn("Invalid proxy prediction data");
+      return redirect(returnTo, 302);
+    }
+
+    const proxyEmail = `proxy_${predictionName.toLowerCase().replace(/\s+/g, "_")}@proxy.local`;
+    await upsertPrediction({
+      userEmail: proxyEmail,
+      userName: predictionName,
+      seahawksScore: parseInt(seahawksStr, 10),
+      patriotsScore: parseInt(patriotsStr, 10),
+      isProxy: true,
+      createdBy: auth.user.email,
+    });
+    log.info("Proxy prediction added for:", predictionName, "by:", auth.user.email);
+    return redirect(returnTo, 302);
+  }
+
+  if (action === "delete_prediction") {
+    const predictionId = parseInt(formData.get("prediction_id")?.toString() || "0", 10);
+    if (predictionId > 0) {
+      await deletePrediction(predictionId);
+      log.info("Prediction deleted:", predictionId, "by:", auth.user.email);
+    }
+    return redirect(returnTo, 302);
+  }
+
   if (action === "clear_all_squares") {
     await clearAllSquares();
     log.info("All squares cleared by:", auth.user.email);
@@ -95,6 +168,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     await Promise.all([
       clearAllSquares(),
       clearAllScores(),
+      clearAllPredictions(),
       setSquaresLockedSetting(false),
     ]);
     log.info("Game reset by:", auth.user.email);

@@ -1,8 +1,8 @@
-import { Grid3X3, ArrowLeft, Lock } from "lucide-react";
+import { Grid3X3, ArrowLeft, Lock, Target, Check } from "lucide-react";
 import { Header, Footer } from "../layout";
-import { Container, PageBackground, Card } from "../ui";
+import { Container, PageBackground, Card, Button } from "../ui";
 import { SquaresGridPicker } from "../squares";
-import type { Square } from "../../db";
+import type { Square, ScorePrediction } from "../../db";
 
 interface User {
   name: string | null;
@@ -15,6 +15,7 @@ interface SquaresPickingPageWrapperProps {
   grid: (Square | null)[][];
   userSquareCount: number;
   maxSquaresPerUser: number;
+  userPrediction: ScorePrediction | null;
 }
 
 export function SquaresPickingPageWrapper({
@@ -22,6 +23,7 @@ export function SquaresPickingPageWrapper({
   grid,
   userSquareCount,
   maxSquaresPerUser,
+  userPrediction,
 }: SquaresPickingPageWrapperProps) {
   return (
     <>
@@ -70,7 +72,7 @@ export function SquaresPickingPageWrapper({
           </Card>
 
           {/* Interactive grid */}
-          <Card variant="bordered">
+          <Card variant="bordered" className="mb-6">
             <SquaresGridPicker
               initialGrid={grid}
               initialUserSquareCount={userSquareCount}
@@ -78,6 +80,59 @@ export function SquaresPickingPageWrapper({
               userEmail={user.email}
               userName={user.name}
             />
+          </Card>
+
+          {/* Score Prediction */}
+          <Card variant="bordered">
+            <div className="flex items-center gap-3 mb-4">
+              <Target className="w-5 h-5 text-gold-400" />
+              <h2 className="text-lg font-semibold text-white">Score Prediction (5th Prize)</h2>
+            </div>
+            <p className="text-sm text-primary-300 mb-4">
+              Guess the final score of the game! The person closest to the actual score wins.
+              Your total difference across both teams determines your rank (lower is better).
+            </p>
+
+            {userPrediction ? (
+              <div className="p-4 bg-primary-800/50 rounded-lg mb-4">
+                <p className="text-sm text-primary-400 mb-2">Your current prediction:</p>
+                <p className="text-white font-medium">
+                  SEA {userPrediction.seahawksScore} - {userPrediction.patriotsScore} NE
+                </p>
+                <p className="text-xs text-primary-500 mt-1">You can update your prediction below.</p>
+              </div>
+            ) : null}
+
+            <form action="/api/predictions" method="POST" className="flex flex-wrap items-end gap-4">
+              <div>
+                <label className="text-green-400 text-sm font-medium mb-1 block">Seahawks</label>
+                <input
+                  type="number"
+                  name="prediction_seahawks"
+                  min="0"
+                  required
+                  defaultValue={userPrediction?.seahawksScore ?? ""}
+                  placeholder="--"
+                  className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
+                />
+              </div>
+              <div>
+                <label className="text-red-400 text-sm font-medium mb-1 block">Patriots</label>
+                <input
+                  type="number"
+                  name="prediction_patriots"
+                  min="0"
+                  required
+                  defaultValue={userPrediction?.patriotsScore ?? ""}
+                  placeholder="--"
+                  className="w-20 px-3 py-2 bg-primary-700 border border-primary-600 rounded-lg text-white text-center"
+                />
+              </div>
+              <Button type="submit" variant="primary" size="sm">
+                <Check className="w-4 h-4" />
+                {userPrediction ? "Update Prediction" : "Submit Prediction"}
+              </Button>
+            </form>
           </Card>
         </Container>
       </main>

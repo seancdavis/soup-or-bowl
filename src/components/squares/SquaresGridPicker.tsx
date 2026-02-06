@@ -195,72 +195,65 @@ export function SquaresGridPicker({
       </div>
 
       {/* Grid */}
-      <div className="overflow-x-auto">
-        <div className="inline-block min-w-full">
-          <table className="border-collapse">
-            <tbody>
-              {grid.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {row.map((cell, colIndex) => {
-                    const isLoading =
-                      loading?.row === rowIndex && loading?.col === colIndex;
-                    const isOwned = cell?.userEmail === userEmail;
-                    const isEmpty = !cell;
+      <div className="w-full overflow-x-auto -mx-2 px-2">
+        <div className="grid grid-cols-10 gap-0.5 sm:gap-1 w-full min-w-[280px] max-w-[600px] mx-auto aspect-square">
+          {grid.map((row, rowIndex) =>
+            row.map((cell, colIndex) => {
+              const isLoading =
+                loading?.row === rowIndex && loading?.col === colIndex;
+              const isOwned = cell?.userEmail === userEmail;
+              const isEmpty = !cell;
 
-                    return (
-                      <td key={colIndex} className="p-0.5">
-                        <button
-                          onClick={() =>
-                            isEmpty
-                              ? handleClaim(rowIndex, colIndex)
-                              : isOwned
-                                ? handleRelease(rowIndex, colIndex)
-                                : undefined
-                          }
-                          disabled={
-                            isLoading ||
-                            (!isEmpty && !isOwned) ||
-                            (isEmpty && !canClaimMore)
-                          }
-                          className={`
-                            w-10 h-10 sm:w-12 sm:h-12 rounded-md
-                            flex items-center justify-center
-                            text-xs font-medium
-                            transition-all duration-150
-                            ${
-                              isEmpty
-                                ? canClaimMore
-                                  ? "bg-primary-700 hover:bg-gold-500/30 hover:border-gold-500 border border-primary-600 cursor-pointer"
-                                  : "bg-primary-800 border border-primary-700 cursor-not-allowed opacity-50"
-                                : isOwned
-                                  ? "bg-gold-500 text-primary-950 border-2 border-gold-400 hover:bg-gold-400 cursor-pointer"
-                                  : "bg-primary-600 text-primary-300 border border-primary-500 cursor-not-allowed"
-                            }
-                            ${isLoading ? "opacity-50 animate-pulse" : ""}
-                          `}
-                          title={
-                            cell
-                              ? `${cell.userName || cell.userEmail}${isOwned ? " (click to release)" : ""}`
-                              : canClaimMore
-                                ? "Click to claim"
-                                : "Maximum squares reached"
-                          }
-                        >
-                          {isLoading ? (
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                          ) : cell ? (
-                            <span className="truncate px-1">
-                              {(cell.userName || cell.userEmail || "?")[0].toUpperCase()}
-                            </span>
-                          ) : null}
-                        </button>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              return (
+                <button
+                  key={`${rowIndex}-${colIndex}`}
+                  onClick={() =>
+                    isEmpty
+                      ? handleClaim(rowIndex, colIndex)
+                      : isOwned
+                        ? handleRelease(rowIndex, colIndex)
+                        : undefined
+                  }
+                  disabled={
+                    isLoading ||
+                    (!isEmpty && !isOwned) ||
+                    (isEmpty && !canClaimMore)
+                  }
+                  className={`
+                    aspect-square rounded-sm sm:rounded-md
+                    flex items-center justify-center
+                    text-[10px] sm:text-xs font-medium
+                    transition-all duration-150
+                    ${
+                      isEmpty
+                        ? canClaimMore
+                          ? "bg-primary-700 hover:bg-gold-500/30 hover:border-gold-500 border border-primary-600 cursor-pointer"
+                          : "bg-primary-800 border border-primary-700 cursor-not-allowed opacity-50"
+                        : isOwned
+                          ? "bg-gold-500 text-primary-950 border-2 border-gold-400 hover:bg-gold-400 cursor-pointer"
+                          : "bg-primary-600 text-primary-300 border border-primary-500 cursor-not-allowed"
+                    }
+                    ${isLoading ? "opacity-50 animate-pulse" : ""}
+                  `}
+                  title={
+                    cell
+                      ? `${cell.userName || cell.userEmail}${isOwned ? " (click to release)" : ""}`
+                      : canClaimMore
+                        ? "Click to claim"
+                        : "Maximum squares reached"
+                  }
+                >
+                  {isLoading ? (
+                    <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                  ) : cell ? (
+                    <span className="truncate px-0.5">
+                      {(cell.userName || cell.userEmail || "?")[0].toUpperCase()}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })
+          )}
         </div>
       </div>
 

@@ -30,9 +30,8 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   // Redirect to login with message and clear session cookies
   const redirectResponse = redirect("/login?message=signed_out", 302);
 
-  // Clear session cookies - must match how they were set (including Partitioned for production)
   if (isLocalhost) {
-    // Localhost cookies (no __Secure- prefix, no Secure flag, SameSite=Lax)
+    // Localhost cookies (no Secure flag, SameSite=Lax)
     redirectResponse.headers.append(
       "Set-Cookie",
       "neon-auth.session_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax"
@@ -42,7 +41,18 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       "neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax"
     );
   } else {
-    // Production cookies (with __Secure- prefix, Secure flag, SameSite=None, Partitioned)
+    // Production cookies - stored without __Secure- prefix for Safari compatibility
+    // (SameSite=Lax, Secure, no Partitioned)
+    redirectResponse.headers.append(
+      "Set-Cookie",
+      "neon-auth.session_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
+    );
+    redirectResponse.headers.append(
+      "Set-Cookie",
+      "neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
+    );
+    // Also clear the old __Secure- prefixed cookies in case they still exist
+    // from sessions established before this fix
     redirectResponse.headers.append(
       "Set-Cookie",
       "__Secure-neon-auth.session_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None; Partitioned"

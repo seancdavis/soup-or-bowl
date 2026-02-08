@@ -22,14 +22,14 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   }
 
   try {
-    // Get cookies from request - may need to add __Secure- prefix back for Neon Auth
+    // Get cookies from request - add __Secure- prefix back for Neon Auth
+    // Since we strip the prefix when setting cookies (for Safari compatibility
+    // in production, and for localhost), we always need to re-add it.
     let cookies = request.headers.get("cookie") || "";
     log.debug("Original cookies:", cookies.substring(0, 100) || "(none)");
 
-    if (isLocalhost) {
-      cookies = fixCookiesForNeonAuth(cookies);
-      log.debug("Fixed cookies:", cookies.substring(0, 100));
-    }
+    cookies = fixCookiesForNeonAuth(cookies);
+    log.debug("Fixed cookies:", cookies.substring(0, 100));
 
     // Call Neon Auth to finalize the session
     const sessionResponse = await fetch(
@@ -60,7 +60,7 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     log.debug("Setting", setCookies.length, "cookies");
 
     for (const cookie of setCookies) {
-      const fixedCookie = isLocalhost ? fixCookieForLocalhost(cookie) : cookie;
+      const fixedCookie = isLocalhost ? fixCookieForLocalhost(cookie) : fixCookieForSafari(cookie);
       response.headers.append("Set-Cookie", fixedCookie);
     }
 
@@ -71,6 +71,21 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     return redirect("/login?error=callback_failed", 302);
   }
 };
+
+/**
+ * Fix cookies for Safari compatibility.
+ * Safari (especially mobile) does not reliably send Partitioned cookies with
+ * SameSite=None during cross-site OAuth redirect chains. Since these cookies
+ * are first-party (same domain), SameSite=Lax is correct and works across
+ * all browsers. We also remove the Partitioned attribute and __Secure- prefix
+ * since SameSite=Lax doesn't require them.
+ */
+function fixCookieForSafari(cookie: string): string {
+  return cookie
+    .replace(/^__Secure-/i, "")
+    .replace(/;\s*Partitioned/gi, "")
+    .replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
+}
 
 /**
  * Fix cookies for localhost by removing __Secure- prefix, Secure flag, and Partitioned.
@@ -86,14 +101,16 @@ function fixCookieForLocalhost(cookie: string): string {
 
 /**
  * Add __Secure- prefix back to cookies for Neon Auth.
+ * We strip the prefix when setting cookies for Safari compatibility,
+ * but Neon Auth expects them with the prefix.
  */
 function fixCookiesForNeonAuth(cookieHeader: string): string {
   const neonCookies = ["neon-auth.session_token", "neon-auth.session_challange"];
 
   let fixed = cookieHeader;
   for (const name of neonCookies) {
-    // Add prefix if cookie exists without it
-    const regex = new RegExp(`(^|;\\s*)${name}=`, "g");
+    // Match cookie name NOT already preceded by __Secure-
+    const regex = new RegExp(`(^|;\\s*)(?!__Secure-)${name}=`, "g");
     fixed = fixed.replace(regex, `$1__Secure-${name}=`);
   }
 

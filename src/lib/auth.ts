@@ -35,14 +35,11 @@ export function createAuthClientForOrigin(origin: string): AuthClient {
  */
 export async function getUser(request: Request): Promise<User | null> {
   const origin = getOrigin(request);
-  const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
 
-  // Get cookies, fixing for Neon Auth if on localhost
+  // Get cookies, fixing for Neon Auth - always re-add __Secure- prefix
+  // since we strip it when setting cookies for Safari compatibility.
   const rawCookies = request.headers.get("cookie") || "";
-  let cookies = rawCookies;
-  if (isLocalhost) {
-    cookies = fixCookiesForNeonAuth(cookies);
-  }
+  let cookies = fixCookiesForNeonAuth(rawCookies);
 
   log.debug("getUser called");
   log.debug("Raw cookies:", rawCookies ? rawCookies.substring(0, 100) : "(none)");
@@ -85,14 +82,17 @@ export async function getUser(request: Request): Promise<User | null> {
 }
 
 /**
- * Add __Secure- prefix back to cookies for Neon Auth (localhost only).
+ * Add __Secure- prefix back to cookies for Neon Auth.
+ * We strip the prefix when setting cookies for Safari compatibility,
+ * but Neon Auth expects them with the prefix.
  */
 function fixCookiesForNeonAuth(cookieHeader: string): string {
   const neonCookies = ["neon-auth.session_token", "neon-auth.session_challange"];
 
   let fixed = cookieHeader;
   for (const name of neonCookies) {
-    const regex = new RegExp(`(^|;\\s*)${name}=`, "g");
+    // Match cookie name NOT already preceded by __Secure-
+    const regex = new RegExp(`(^|;\\s*)(?!__Secure-)${name}=`, "g");
     fixed = fixed.replace(regex, `$1__Secure-${name}=`);
   }
 

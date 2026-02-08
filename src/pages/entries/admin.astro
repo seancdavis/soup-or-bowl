@@ -4,6 +4,7 @@ import { AdminEntriesPage } from "../../components/pages";
 import { getUserWithApproval } from "../../lib/auth";
 import { getAllEntries } from "../../lib/entries";
 import { getRevealEntriesSetting } from "../../lib/settings";
+import { getUserAdminGames } from "../../lib/games";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -21,11 +22,14 @@ if (!auth.isAdmin) {
 }
 
 const { user } = auth;
-const entries = await getAllEntries();
-const revealEntries = await getRevealEntriesSetting();
+const [entries, revealEntries, adminGames] = await Promise.all([
+  getAllEntries(),
+  getRevealEntriesSetting(),
+  getUserAdminGames(user.email),
+]);
 const message = Astro.url.searchParams.get("message");
 ---
 
 <Layout title="Admin - All Entries - SoupOrBowl 2026">
-  <AdminEntriesPage user={user} entries={entries} revealEntries={revealEntries} message={message} client:load />
+  <AdminEntriesPage user={user} entries={entries} revealEntries={revealEntries} message={message} adminGames={adminGames} client:load />
 </Layout>

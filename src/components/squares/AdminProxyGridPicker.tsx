@@ -6,11 +6,13 @@ import { Button } from "../ui";
 interface AdminProxyGridPickerProps {
   initialGrid: (Square | null)[][];
   maxSquaresPerUser: number;
+  apiBaseUrl: string;
 }
 
 export function AdminProxyGridPicker({
   initialGrid,
   maxSquaresPerUser,
+  apiBaseUrl,
 }: AdminProxyGridPickerProps) {
   const [grid, setGrid] = useState<(Square | null)[][]>(initialGrid);
   const [proxyName, setProxyName] = useState("");
@@ -47,7 +49,7 @@ export function AdminProxyGridPicker({
   // Fetch grid from admin endpoint
   const fetchGrid = useCallback(async () => {
     try {
-      const response = await fetch("/api/admin/squares", {
+      const response = await fetch(apiBaseUrl, {
         credentials: "include",
       });
       if (!response.ok) return;
@@ -109,7 +111,7 @@ export function AdminProxyGridPicker({
     setSuccessMsg(null);
 
     try {
-      const response = await fetch("/api/admin/squares", {
+      const response = await fetch(apiBaseUrl, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -150,7 +152,7 @@ export function AdminProxyGridPicker({
     setSuccessMsg(null);
 
     try {
-      const response = await fetch("/api/admin/squares", {
+      const response = await fetch(apiBaseUrl, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -185,7 +187,7 @@ export function AdminProxyGridPicker({
     setSuccessMsg(null);
 
     try {
-      const response = await fetch("/api/admin/squares", {
+      const response = await fetch(apiBaseUrl, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

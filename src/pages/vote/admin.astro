@@ -5,6 +5,7 @@ import { getUserWithApproval } from "../../lib/auth";
 import { getVotesWithEntries } from "../../lib/votes";
 import { getAllEntries } from "../../lib/entries";
 import { getVotingSettings } from "../../lib/settings";
+import { getUserAdminGames } from "../../lib/games";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -22,10 +23,11 @@ if (!auth.isAdmin) {
 }
 
 const { user } = auth;
-const [votesWithEntries, votingSettings, allEntries] = await Promise.all([
+const [votesWithEntries, votingSettings, allEntries, adminGames] = await Promise.all([
   getVotesWithEntries(),
   getVotingSettings(),
   getAllEntries(),
+  getUserAdminGames(user.email),
 ]);
 
 const message = Astro.url.searchParams.get("message");
@@ -40,6 +42,7 @@ const message = Astro.url.searchParams.get("message");
     votingLocked={votingSettings.votingLocked}
     revealResults={votingSettings.revealResults}
     message={message}
+    adminGames={adminGames}
     client:load
   />
 </Layout>

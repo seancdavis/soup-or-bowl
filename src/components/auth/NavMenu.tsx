@@ -1,10 +1,17 @@
 import { Menu, Settings, Trophy, Vote, Grid3X3 } from "lucide-react";
 
-interface NavMenuProps {
-  isAdmin?: boolean;
+interface AdminGame {
+  slug: string;
+  name: string;
 }
 
-export function NavMenu({ isAdmin }: NavMenuProps) {
+interface NavMenuProps {
+  isAdmin?: boolean;
+  isPartyUser?: boolean;
+  adminGames?: AdminGame[];
+}
+
+export function NavMenu({ isAdmin, isPartyUser = true, adminGames = [] }: NavMenuProps) {
   return (
     <details className="relative">
       <summary className="flex items-center justify-center w-9 h-9 rounded-full bg-primary-800/50 hover:bg-primary-700/50 ring-2 ring-transparent hover:ring-gold-500/30 transition-all duration-200 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
@@ -18,20 +25,24 @@ export function NavMenu({ isAdmin }: NavMenuProps) {
 
         {/* Navigation links */}
         <div className="p-2">
-          <a
-            href="/entries"
-            className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
-          >
-            <Trophy className="w-4 h-4 text-primary-500" />
-            All Entries
-          </a>
-          <a
-            href="/vote"
-            className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
-          >
-            <Vote className="w-4 h-4 text-primary-500" />
-            Vote
-          </a>
+          {isPartyUser && (
+            <>
+              <a
+                href="/entries"
+                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+              >
+                <Trophy className="w-4 h-4 text-primary-500" />
+                All Entries
+              </a>
+              <a
+                href="/vote"
+                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+              >
+                <Vote className="w-4 h-4 text-primary-500" />
+                Vote
+              </a>
+            </>
+          )}
           <a
             href="/squares"
             className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
@@ -40,32 +51,39 @@ export function NavMenu({ isAdmin }: NavMenuProps) {
             Squares
           </a>
 
-          {isAdmin && (
+          {((isAdmin && isPartyUser) || adminGames.length > 0) && (
             <>
               {/* Admin divider */}
               <div className="h-px bg-primary-700/60 mx-2 my-1" />
 
-              <a
-                href="/entries/admin"
-                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
-              >
-                <Settings className="w-4 h-4 text-primary-500" />
-                Entry Admin
-              </a>
-              <a
-                href="/vote/admin"
-                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
-              >
-                <Settings className="w-4 h-4 text-primary-500" />
-                Voting Admin
-              </a>
-              <a
-                href="/squares/admin"
-                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
-              >
-                <Settings className="w-4 h-4 text-primary-500" />
-                Squares Admin
-              </a>
+              {isAdmin && isPartyUser && (
+                <>
+                  <a
+                    href="/entries/admin"
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+                  >
+                    <Settings className="w-4 h-4 text-primary-500" />
+                    Entry Admin
+                  </a>
+                  <a
+                    href="/vote/admin"
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+                  >
+                    <Settings className="w-4 h-4 text-primary-500" />
+                    Voting Admin
+                  </a>
+                </>
+              )}
+              {adminGames.map((game) => (
+                <a
+                  key={game.slug}
+                  href={`/squares/${game.slug}/admin`}
+                  className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary-300 hover:text-white hover:bg-primary-800/60 rounded-lg transition-all duration-150"
+                >
+                  <Settings className="w-4 h-4 text-primary-500" />
+                  {game.name} Admin
+                </a>
+              ))}
             </>
           )}
 

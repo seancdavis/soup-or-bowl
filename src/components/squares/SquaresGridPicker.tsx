@@ -8,6 +8,7 @@ interface SquaresGridPickerProps {
   maxSquaresPerUser: number;
   userEmail: string;
   userName: string | null;
+  apiBaseUrl: string;
 }
 
 export function SquaresGridPicker({
@@ -16,6 +17,7 @@ export function SquaresGridPicker({
   maxSquaresPerUser,
   userEmail,
   userName,
+  apiBaseUrl,
 }: SquaresGridPickerProps) {
   const [grid, setGrid] = useState<(Square | null)[][]>(initialGrid);
   const [userSquareCount, setUserSquareCount] = useState(initialUserSquareCount);
@@ -27,7 +29,7 @@ export function SquaresGridPicker({
   // Poll for grid updates
   const fetchGrid = useCallback(async () => {
     try {
-      const response = await fetch("/api/squares", {
+      const response = await fetch(apiBaseUrl, {
         credentials: "include",
       });
 
@@ -48,7 +50,7 @@ export function SquaresGridPicker({
     } catch {
       // Silent fail on polling errors
     }
-  }, []);
+  }, [apiBaseUrl]);
 
   // Set up polling
   useEffect(() => {
@@ -79,7 +81,7 @@ export function SquaresGridPicker({
     setError(null);
 
     try {
-      const response = await fetch("/api/squares", {
+      const response = await fetch(apiBaseUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -126,7 +128,7 @@ export function SquaresGridPicker({
     setError(null);
 
     try {
-      const response = await fetch("/api/squares", {
+      const response = await fetch(apiBaseUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

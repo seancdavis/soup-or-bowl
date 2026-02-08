@@ -211,18 +211,50 @@ import { LogOut, User, Settings } from "lucide-react";
 ### Pages (`src/pages/`)
 | Route | File | Auth | Description |
 |-------|------|------|-------------|
-| `/` | `index.astro` | Required + Approved | Home page |
+| `/` | `index.astro` | Required + Approved (game-only → `/squares`) | Home page |
 | `/login` | `login.astro` | None (redirects if logged in) | Login page |
-| `/unauthorized` | `unauthorized.astro` | Required (redirects if approved) | Unapproved users |
+| `/unauthorized` | `unauthorized.astro` | Required (approved → `/`, game-only → `/squares`) | Unapproved users |
 | `/entries` | `entries/index.astro` | Required + Approved | All entries list |
 | `/entries/admin` | `entries/admin.astro` | Required + Approved + Admin | Admin entries view |
 | `/vote` | `vote/index.astro` | Required + Approved | Voting page |
 | `/vote/admin` | `vote/admin.astro` | Required + Approved + Admin | Admin voting controls |
+| `/squares` | `squares/index.astro` | Required + Game Access | Hub: redirects to game if 1, shows picker if 2+ |
+| `/squares/[slug]` | `squares/[slug]/index.astro` | Required + Game Access | Squares player view |
+| `/squares/[slug]/admin` | `squares/[slug]/admin.astro` | Required + Game Admin | Squares admin view |
 | `/api/auth/signin` | `api/auth/signin.ts` | None | Start OAuth |
 | `/api/auth/callback` | `api/auth/callback.ts` | None | OAuth callback |
 | `/api/auth/signout` | `api/auth/signout.ts` | None | Sign out |
 | `/api/votes` | `api/votes.ts` | Required + Approved | Submit/update vote |
 | `/api/admin/settings` | `api/admin/settings.ts` | Required + Approved + Admin | Toggle app settings |
+| `/api/squares/[slug]` | `api/squares/[slug].ts` | Required + Game Access | Squares player API (claim/release) |
+| `/api/admin/squares/[slug]` | `api/admin/squares/[slug].ts` | Required + Game Admin | Squares admin API (settings, proxy, scores) |
+| `/api/predictions/[slug]` | `api/predictions/[slug].ts` | Required + Game Access | Score predictions API |
+
+### Multi-Game Squares Architecture
+
+The app supports multiple independent Squares games (e.g., "party" for the Super Bowl party, "family" for a remote family group). Both games share the same real Super Bowl scores but have independent grids, axis numbers, predictions, lock state, and admins.
+
+**Key Tables:**
+- `games` — Each Squares game (slug, name, isLocked, maxSquaresPerUser)
+- `gameAccess` — User-to-game mapping with role (`"admin"` | `"player"`)
+- `squares`, `squaresAxisNumbers`, `scorePredictions` — All have `gameId` FK
+- `squaresScores` — Shared across all games (same real Super Bowl)
+
+**Auth Patterns:**
+- Party features (entries, voting, home page) use `approvedUsers` table
+- Game access uses `gameAccess` table (separate from party approval)
+- These two tables are **not automatically synced** — new party users who also play squares need rows in both `approvedUsers` and `gameAccess`
+- Game-only users (no party access) only need a `gameAccess` row — they'll be redirected to `/squares` on login and won't see Entries/Vote in the nav
+- Non-party users with game access are redirected: home → `/squares`, unauthorized → `/squares`
+- `isPartyUser` prop on Header/NavMenu controls visibility of Entries/Vote nav links
+- Game admin links appear on game pages (Settings icon), not in global nav
+
+**Key Files:**
+- `src/lib/games.ts` — Game access utilities (`getGameBySlug`, `getUserGames`, `getUserGameAccess`, `isGameAdmin`, `setGameLocked`, `setGameMaxSquares`)
+- `src/lib/squares.ts` — All game-scoped functions take `gameId: number` as first param; global functions (`getScores`, `setScore`, `buildGrid`) remain unchanged
+- `src/components/pages/GamePickerPage.tsx` — Shown when user has access to 2+ games
+
+**Settings moved to `games` table:** `isLocked` and `maxSquaresPerUser` are per-game fields (no longer in `appSettings`). Final scores (`FINAL_SEAHAWKS_SCORE`, `FINAL_PATRIOTS_SCORE`) remain in `appSettings` (global).
 
 ### Voting System
 

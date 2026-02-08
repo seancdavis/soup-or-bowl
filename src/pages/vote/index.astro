@@ -5,6 +5,7 @@ import { getUserWithApproval } from "../../lib/auth";
 import { getAllEntries } from "../../lib/entries";
 import { getVoteByEmail } from "../../lib/votes";
 import { getVotingActiveSetting, getVotingLockedSetting } from "../../lib/settings";
+import { getUserAdminGames } from "../../lib/games";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -17,11 +18,12 @@ if (!auth.isApproved) {
 }
 
 const { user } = auth;
-const [entries, existingVote, votingActive, votingLocked] = await Promise.all([
+const [entries, existingVote, votingActive, votingLocked, adminGames] = await Promise.all([
   getAllEntries(),
   getVoteByEmail(user.email),
   getVotingActiveSetting(),
   getVotingLockedSetting(),
+  getUserAdminGames(user.email),
 ]);
 ---
 
@@ -33,5 +35,6 @@ const [entries, existingVote, votingActive, votingLocked] = await Promise.all([
     votingActive={votingActive}
     votingLocked={votingLocked}
     isAdmin={auth.isAdmin}
+    adminGames={adminGames}
   />
 </Layout>

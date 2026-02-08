@@ -10,6 +10,11 @@ interface ProfilePageUser {
   googleImage?: string | null;
 }
 
+interface AdminGame {
+  slug: string;
+  name: string;
+}
+
 interface ProfilePageProps {
   user: ProfilePageUser;
   displayName: string | null;
@@ -17,15 +22,16 @@ interface ProfilePageProps {
   imageUploadSlot?: boolean;
   children?: ReactNode;
   isAdmin?: boolean;
+  adminGames?: AdminGame[];
 }
 
-export function ProfilePage({ user, displayName, customImage, children, isAdmin }: ProfilePageProps) {
+export function ProfilePage({ user, displayName, customImage, children, isAdmin, adminGames }: ProfilePageProps) {
   // Use the custom display name if set, otherwise fall back to OAuth name
   const currentName = displayName ?? user.name ?? "";
 
   return (
     <>
-      <Header user={{ ...user, name: displayName ?? user.name }} isAdmin={isAdmin} />
+      <Header user={{ ...user, name: displayName ?? user.name }} isAdmin={isAdmin} adminGames={adminGames} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

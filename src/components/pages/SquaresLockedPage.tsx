@@ -1,4 +1,4 @@
-import { Grid3X3, ArrowLeft, Trophy, Target } from "lucide-react";
+import { Grid3X3, ArrowLeft, Trophy, Target, Settings } from "lucide-react";
 import { Header, Footer } from "../layout";
 import { Container, PageBackground, Card } from "../ui";
 import { SquaresGridLocked } from "../squares";
@@ -17,9 +17,19 @@ interface WinnerInfo {
   winningSquare: Square | null;
 }
 
+interface AdminGame {
+  slug: string;
+  name: string;
+}
+
 interface SquaresLockedPageProps {
   user: User;
   isAdmin?: boolean;
+  isPartyUser?: boolean;
+  adminGames?: AdminGame[];
+  gameSlug: string;
+  gameName: string;
+  isGameAdmin?: boolean;
   grid: (Square | null)[][];
   rowNumbers: number[];
   colNumbers: number[];
@@ -36,6 +46,11 @@ interface SquaresLockedPageProps {
 export function SquaresLockedPage({
   user,
   isAdmin,
+  isPartyUser = true,
+  adminGames,
+  gameSlug,
+  gameName,
+  isGameAdmin,
   grid,
   rowNumbers,
   colNumbers,
@@ -55,7 +70,7 @@ export function SquaresLockedPage({
 
   return (
     <>
-      <Header user={user} isAdmin={isAdmin} />
+      <Header user={user} isAdmin={isAdmin} isPartyUser={isPartyUser} adminGames={adminGames} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 
@@ -74,12 +89,21 @@ export function SquaresLockedPage({
             <div className="w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center">
               <Grid3X3 className="w-6 h-6 text-gold-400" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Super Bowl Squares</h1>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-white">{gameName}</h1>
               <p className="text-primary-400">
                 Game is locked! Numbers have been assigned.
               </p>
             </div>
+            {isGameAdmin && (
+              <a
+                href={`/squares/${gameSlug}/admin`}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-primary-300 hover:text-white bg-primary-800/50 hover:bg-primary-700/50 rounded-lg transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                Admin
+              </a>
+            )}
           </div>
 
           {/* Winner summary */}

@@ -4,6 +4,7 @@ import { ProfilePage } from "../components/pages";
 import { ProfileImageUpload } from "../components/profile";
 import { getUserWithApproval } from "../lib/auth";
 import { getUserProfile } from "../lib/profile";
+import { getUserAdminGames } from "../lib/games";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -16,7 +17,10 @@ if (!auth.isApproved) {
 }
 
 const { user } = auth;
-const profile = await getUserProfile(user.email);
+const [profile, adminGames] = await Promise.all([
+  getUserProfile(user.email),
+  getUserAdminGames(user.email),
+]);
 const displayName = profile?.name ?? null;
 const customImage = profile?.customImage ?? null;
 const googleImage = user.googleImage ?? user.image;
@@ -29,6 +33,7 @@ const googleImage = user.googleImage ?? user.image;
     customImage={customImage}
     imageUploadSlot={true}
     isAdmin={auth.isAdmin}
+    adminGames={adminGames}
   >
     <ProfileImageUpload
       client:load

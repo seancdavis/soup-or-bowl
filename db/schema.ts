@@ -5,6 +5,7 @@ import {
   varchar,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -59,14 +60,12 @@ export const appSettings = pgTable("app_settings", {
 export type AppSetting = typeof appSettings.$inferSelect;
 export type NewAppSetting = typeof appSettings.$inferInsert;
 
-// Known setting keys
+// Known setting keys (game-scoped settings like lock/maxSquares are now on the games table)
 export const SETTING_KEYS = {
   REVEAL_ENTRIES: "reveal_entries",
   VOTING_ACTIVE: "voting_active",
   VOTING_LOCKED: "voting_locked",
   REVEAL_RESULTS: "reveal_results",
-  SQUARES_LOCKED: "squares_locked",
-  MAX_SQUARES_PER_USER: "max_squares_per_user",
   FINAL_SEAHAWKS_SCORE: "final_seahawks_score",
   FINAL_PATRIOTS_SCORE: "final_patriots_score",
 } as const;
@@ -91,18 +90,71 @@ export type Vote = typeof votes.$inferSelect;
 export type NewVote = typeof votes.$inferInsert;
 
 /**
- * Squares game - 10x10 grid for Super Bowl betting.
- * Each square is identified by row (0-9) and col (0-9).
+ * Games table - defines each independent Squares game.
  */
-export const squares = pgTable("squares", {
+export const games = pgTable("games", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  row: integer().notNull(), // 0-9
-  col: integer().notNull(), // 0-9
-  userEmail: varchar("user_email", { length: 255 }).notNull(),
-  userName: varchar("user_name", { length: 255 }),
-  userImage: varchar("user_image", { length: 255 }),
-  claimedAt: timestamp("claimed_at").defaultNow(),
+  slug: varchar({ length: 100 }).notNull().unique(),
+  name: varchar({ length: 255 }).notNull(),
+  isLocked: boolean("is_locked").notNull().default(false),
+  maxSquaresPerUser: integer("max_squares_per_user").notNull().default(5),
+  createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Type inference for games
+export type Game = typeof games.$inferSelect;
+export type NewGame = typeof games.$inferInsert;
+
+/**
+ * Game access - maps users to games with roles.
+ */
+export const gameAccess = pgTable(
+  "game_access",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    gameId: integer("game_id")
+      .notNull()
+      .references(() => games.id),
+    userEmail: varchar("user_email", { length: 255 }).notNull(),
+    role: varchar({ length: 20 }).notNull().default("player"), // "admin" | "player"
+    addedAt: timestamp("added_at").defaultNow(),
+    addedBy: varchar("added_by", { length: 255 }),
+  },
+  (table) => [
+    uniqueIndex("game_access_game_user_idx").on(table.gameId, table.userEmail),
+  ]
+);
+
+// Type inference for game access
+export type GameAccess = typeof gameAccess.$inferSelect;
+export type NewGameAccess = typeof gameAccess.$inferInsert;
+
+/**
+ * Squares game - 10x10 grid for Super Bowl betting.
+ * Each square is identified by row (0-9) and col (0-9) within a game.
+ */
+export const squares = pgTable(
+  "squares",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    gameId: integer("game_id")
+      .notNull()
+      .references(() => games.id),
+    row: integer().notNull(), // 0-9
+    col: integer().notNull(), // 0-9
+    userEmail: varchar("user_email", { length: 255 }).notNull(),
+    userName: varchar("user_name", { length: 255 }),
+    userImage: varchar("user_image", { length: 255 }),
+    claimedAt: timestamp("claimed_at").defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("squares_game_row_col_idx").on(
+      table.gameId,
+      table.row,
+      table.col
+    ),
+  ]
+);
 
 // Type inference for squares
 export type Square = typeof squares.$inferSelect;
@@ -114,6 +166,9 @@ export type NewSquare = typeof squares.$inferInsert;
  */
 export const squaresAxisNumbers = pgTable("squares_axis_numbers", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  gameId: integer("game_id")
+    .notNull()
+    .references(() => games.id),
   axis: varchar({ length: 10 }).notNull(), // "row" or "col"
   position: integer().notNull(), // 0-9
   value: integer().notNull(), // 0-9 (the randomly assigned number)
@@ -126,6 +181,7 @@ export type NewSquaresAxisNumber = typeof squaresAxisNumbers.$inferInsert;
 
 /**
  * Squares scores - stores the team scores for each quarter.
+ * Shared across all games (same real Super Bowl).
  */
 export const squaresScores = pgTable("squares_scores", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -144,17 +200,29 @@ export type NewSquaresScore = typeof squaresScores.$inferInsert;
  * Winner is the person with the lowest combined score difference.
  * Supports proxy predictions for non-registered users.
  */
-export const scorePredictions = pgTable("score_predictions", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  userEmail: varchar("user_email", { length: 255 }).notNull(),
-  userName: varchar("user_name", { length: 255 }),
-  seahawksScore: integer("seahawks_score").notNull(),
-  patriotsScore: integer("patriots_score").notNull(),
-  isProxy: boolean("is_proxy").notNull().default(false),
-  createdBy: varchar("created_by", { length: 255 }),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const scorePredictions = pgTable(
+  "score_predictions",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    gameId: integer("game_id")
+      .notNull()
+      .references(() => games.id),
+    userEmail: varchar("user_email", { length: 255 }).notNull(),
+    userName: varchar("user_name", { length: 255 }),
+    seahawksScore: integer("seahawks_score").notNull(),
+    patriotsScore: integer("patriots_score").notNull(),
+    isProxy: boolean("is_proxy").notNull().default(false),
+    createdBy: varchar("created_by", { length: 255 }),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("score_predictions_game_user_idx").on(
+      table.gameId,
+      table.userEmail
+    ),
+  ]
+);
 
 // Type inference for score predictions
 export type ScorePrediction = typeof scorePredictions.$inferSelect;

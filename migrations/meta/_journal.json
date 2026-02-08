@@ -57,6 +57,13 @@
       "when": 1770394441279,
       "tag": "0007_tranquil_vulture",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1770560671530,
+      "tag": "0008_bitter_enchantress",
+      "breakpoints": true
     }
   ]
 }

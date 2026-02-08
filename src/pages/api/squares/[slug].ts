@@ -1,9 +1,6 @@
 import type { APIRoute } from "astro";
-import { getUserWithApproval } from "../../lib/auth";
-import {
-  getSquaresLockedSetting,
-  getMaxSquaresPerUserSetting,
-} from "../../lib/settings";
+import { getUserWithApproval } from "../../../lib/auth";
+import { getGameBySlug, getUserGameAccess } from "../../../lib/games";
 import {
   getAllSquares,
   getSquare,
@@ -11,18 +8,19 @@ import {
   releaseSquare,
   countSquaresByUser,
   buildGrid,
-} from "../../lib/squares";
-import { logger } from "../../lib/logger";
+} from "../../../lib/squares";
+import { logger } from "../../../lib/logger";
 
 const log = logger.scope("SQUARES");
 
 /**
- * GET /api/squares
+ * GET /api/squares/:slug
  * Returns the current grid state for polling.
  * Returns 423 if the game is locked (signal to client to refresh).
  */
-export const GET: APIRoute = async ({ request }) => {
-  // Verify authentication and approval
+export const GET: APIRoute = async ({ request, params }) => {
+  const { slug } = params;
+
   const auth = await getUserWithApproval(request);
   if (!auth) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -30,27 +28,36 @@ export const GET: APIRoute = async ({ request }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
-  if (!auth.isApproved) {
-    return new Response(JSON.stringify({ error: "Not approved" }), {
+
+  const game = await getGameBySlug(slug!);
+  if (!game) {
+    return new Response(JSON.stringify({ error: "Game not found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const access = await getUserGameAccess(auth.user.email, game.id);
+  if (!access) {
+    return new Response(JSON.stringify({ error: "No access to this game" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  // Check if game is locked
-  const squaresLocked = await getSquaresLockedSetting();
-  if (squaresLocked) {
-    return new Response(JSON.stringify({ error: "Game locked", locked: true }), {
-      status: 423,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (game.isLocked) {
+    return new Response(
+      JSON.stringify({ error: "Game locked", locked: true }),
+      {
+        status: 423,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
-  // Get grid data
-  const [allSquares, userSquareCount, maxSquaresPerUser] = await Promise.all([
-    getAllSquares(),
-    countSquaresByUser(auth.user.email),
-    getMaxSquaresPerUserSetting(),
+  const [allSquares, userSquareCount] = await Promise.all([
+    getAllSquares(game.id),
+    countSquaresByUser(game.id, auth.user.email),
   ]);
 
   const grid = buildGrid(allSquares);
@@ -59,7 +66,7 @@ export const GET: APIRoute = async ({ request }) => {
     JSON.stringify({
       grid,
       userSquareCount,
-      maxSquaresPerUser,
+      maxSquaresPerUser: game.maxSquaresPerUser,
       userEmail: auth.user.email,
     }),
     {
@@ -70,12 +77,13 @@ export const GET: APIRoute = async ({ request }) => {
 };
 
 /**
- * POST /api/squares
+ * POST /api/squares/:slug
  * Claim or release a square.
  * Body: { action: "claim" | "release", row: number, col: number }
  */
-export const POST: APIRoute = async ({ request }) => {
-  // Verify authentication and approval
+export const POST: APIRoute = async ({ request, params }) => {
+  const { slug } = params;
+
   const auth = await getUserWithApproval(request);
   if (!auth) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -83,27 +91,36 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
-  if (!auth.isApproved) {
-    return new Response(JSON.stringify({ error: "Not approved" }), {
+
+  const game = await getGameBySlug(slug!);
+  if (!game) {
+    return new Response(JSON.stringify({ error: "Game not found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const access = await getUserGameAccess(auth.user.email, game.id);
+  if (!access) {
+    return new Response(JSON.stringify({ error: "No access to this game" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  // Check if game is locked
-  const squaresLocked = await getSquaresLockedSetting();
-  if (squaresLocked) {
-    return new Response(JSON.stringify({ error: "Game locked", locked: true }), {
-      status: 423,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (game.isLocked) {
+    return new Response(
+      JSON.stringify({ error: "Game locked", locked: true }),
+      {
+        status: 423,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
-  // Parse body
   const body = await request.json();
   const { action, row, col } = body;
 
-  // Validate inputs
   if (typeof row !== "number" || typeof col !== "number") {
     return new Response(JSON.stringify({ error: "Invalid coordinates" }), {
       status: 400,
@@ -112,25 +129,27 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   if (row < 0 || row > 9 || col < 0 || col > 9) {
-    return new Response(JSON.stringify({ error: "Coordinates out of range" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Coordinates out of range" }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
   if (action === "claim") {
-    // Check max squares limit
-    const [userSquareCount, maxSquaresPerUser] = await Promise.all([
-      countSquaresByUser(auth.user.email),
-      getMaxSquaresPerUserSetting(),
-    ]);
+    const userSquareCount = await countSquaresByUser(
+      game.id,
+      auth.user.email
+    );
 
-    if (userSquareCount >= maxSquaresPerUser) {
+    if (userSquareCount >= game.maxSquaresPerUser) {
       return new Response(
         JSON.stringify({
           error: "Maximum squares reached",
           userSquareCount,
-          maxSquaresPerUser,
+          maxSquaresPerUser: game.maxSquaresPerUser,
         }),
         {
           status: 400,
@@ -139,8 +158,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Check if already taken
-    const existing = await getSquare(row, col);
+    const existing = await getSquare(game.id, row, col);
     if (existing) {
       return new Response(
         JSON.stringify({ error: "Square already taken", square: existing }),
@@ -151,8 +169,8 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Claim the square
     const newSquare = await claimSquare(
+      game.id,
       row,
       col,
       auth.user.email,
@@ -161,13 +179,23 @@ export const POST: APIRoute = async ({ request }) => {
     );
 
     if (!newSquare) {
-      return new Response(JSON.stringify({ error: "Failed to claim square" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Failed to claim square" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
-    log.info("Square claimed:", `(${row},${col})`, "by:", auth.user.email);
+    log.info(
+      "Square claimed:",
+      `(${row},${col})`,
+      "in:",
+      slug,
+      "by:",
+      auth.user.email
+    );
 
     return new Response(
       JSON.stringify({ success: true, square: newSquare }),
@@ -179,7 +207,12 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   if (action === "release") {
-    const released = await releaseSquare(row, col, auth.user.email);
+    const released = await releaseSquare(
+      game.id,
+      row,
+      col,
+      auth.user.email
+    );
 
     if (!released) {
       return new Response(
@@ -191,7 +224,14 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    log.info("Square released:", `(${row},${col})`, "by:", auth.user.email);
+    log.info(
+      "Square released:",
+      `(${row},${col})`,
+      "in:",
+      slug,
+      "by:",
+      auth.user.email
+    );
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

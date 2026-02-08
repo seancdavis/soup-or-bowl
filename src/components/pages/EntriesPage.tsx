@@ -15,6 +15,11 @@ interface Winner {
   score: number;
 }
 
+interface AdminGame {
+  slug: string;
+  name: string;
+}
+
 interface EntriesPageProps {
   user: User;
   entries: Entry[];
@@ -22,6 +27,7 @@ interface EntriesPageProps {
   revealResults?: boolean;
   winner?: Winner | null;
   isAdmin?: boolean;
+  adminGames?: AdminGame[];
 }
 
 export function EntriesPage({
@@ -31,12 +37,13 @@ export function EntriesPage({
   revealResults = false,
   winner = null,
   isAdmin,
+  adminGames,
 }: EntriesPageProps) {
   const hasEntry = entries.some((e) => e.userEmail === user.email);
 
   return (
     <>
-      <Header user={user} isAdmin={isAdmin} />
+      <Header user={user} isAdmin={isAdmin} adminGames={adminGames} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

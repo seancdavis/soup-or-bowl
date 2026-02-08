@@ -1,20 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { SquaresLockedPage } from "../../components/pages";
-import { SquaresPickingPageWrapper } from "../../components/pages/SquaresPickingPageWrapper";
+import { GamePickerPage } from "../../components/pages/GamePickerPage";
 import { getUserWithApproval } from "../../lib/auth";
-import { getSquaresSettings, getFinalScoreSetting } from "../../lib/settings";
-import {
-  getAllSquares,
-  getAxisNumbers,
-  getScores,
-  calculateWinners,
-  buildGrid,
-  countSquaresByUser,
-  getPredictionByEmail,
-  getAllPredictions,
-  calculatePredictionResults,
-} from "../../lib/squares";
+import { getUserGames } from "../../lib/games";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -22,55 +10,28 @@ if (!auth) {
   return Astro.redirect("/login");
 }
 
-if (!auth.isApproved) {
+const { user, isApproved, isAdmin } = auth;
+
+const userGames = await getUserGames(user.email);
+
+if (userGames.length === 0) {
   return Astro.redirect("/unauthorized");
 }
 
-const { user, isAdmin } = auth;
+if (userGames.length === 1) {
+  return Astro.redirect(`/squares/${userGames[0].slug}`);
+}
 
-const [settings, allSquares, axisNumbers, scores, winners, userPrediction, allPredictions, actualFinalScore] = await Promise.all([
-  getSquaresSettings(),
-  getAllSquares(),
-  getAxisNumbers(),
-  getScores(),
-  calculateWinners(),
-  getPredictionByEmail(user.email),
-  getAllPredictions(),
-  getFinalScoreSetting(),
-]);
-
-const grid = buildGrid(allSquares);
-const userSquareCount = await countSquaresByUser(user.email);
-const predictionResults = calculatePredictionResults(
-  allPredictions,
-  actualFinalScore.seahawks,
-  actualFinalScore.patriots,
-);
+// 2+ games — show game picker
+const adminGames = userGames.filter((g) => g.role === "admin").map(({ slug, name }) => ({ slug, name }));
 ---
 
-<Layout title="Squares - Soup or Bowl 2026">
-  {settings.squaresLocked ? (
-    <SquaresLockedPage
-      user={user}
-      isAdmin={isAdmin}
-      grid={grid}
-      rowNumbers={axisNumbers.rows}
-      colNumbers={axisNumbers.cols}
-      scores={scores}
-      winners={winners}
-      userPrediction={userPrediction}
-      predictionResults={predictionResults}
-      actualFinalScore={actualFinalScore}
-    />
-  ) : (
-    <SquaresPickingPageWrapper
-      user={user}
-      isAdmin={isAdmin}
-      grid={grid}
-      userSquareCount={userSquareCount}
-      maxSquaresPerUser={settings.maxSquaresPerUser}
-      userPrediction={userPrediction}
-      client:load
-    />
-  )}
+<Layout title="Squares - SoupOrBowl 2026">
+  <GamePickerPage
+    user={user}
+    isAdmin={isAdmin}
+    isPartyUser={isApproved}
+    adminGames={adminGames}
+    games={userGames}
+  />
 </Layout>

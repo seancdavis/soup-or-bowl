@@ -10,7 +10,7 @@ const log = logger.scope("SIGNIN");
  */
 export const GET: APIRoute = async ({ request, redirect }) => {
   const origin = getOrigin(request);
-  const callbackURL = `${origin}/api/auth/callback?redirect=/`;
+  const callbackURL = `/api/auth/callback?redirect=/`;
 
   try {
     const response = await fetch(`${origin}/neon-auth/sign-in/social`, {

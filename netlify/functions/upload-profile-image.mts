@@ -9,16 +9,16 @@ async function getAuthenticatedUser(request: Request, context: Context): Promise
   const origin = request.headers.get("origin") || `https://${request.headers.get("host")}`;
   const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
 
-  // Get cookies, fixing for Neon Auth if on localhost
+  // Get cookies, fixing for Neon Auth - always re-add __Secure- prefix
+  // since we strip it from session cookies for Safari compatibility.
+  // The challenge cookie already has the prefix, but session_token doesn't.
   const rawCookies = request.headers.get("cookie") || "";
   let cookies = rawCookies;
 
-  if (isLocalhost) {
-    const neonCookies = ["neon-auth.session_token", "neon-auth.session_challange"];
-    for (const name of neonCookies) {
-      const regex = new RegExp(`(^|;\\s*)${name}=`, "g");
-      cookies = cookies.replace(regex, `$1__Secure-${name}=`);
-    }
+  const neonCookies = ["neon-auth.session_token", "neon-auth.session_challange"];
+  for (const name of neonCookies) {
+    const regex = new RegExp(`(^|;\\s*)(?!__Secure-)${name}=`, "g");
+    cookies = cookies.replace(regex, `$1__Secure-${name}=`);
   }
 
   try {

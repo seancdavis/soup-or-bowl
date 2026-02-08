@@ -41,25 +41,25 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       "neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax"
     );
   } else {
-    // Production cookies - stored without __Secure- prefix for Safari compatibility
-    // (SameSite=Lax, Secure, no Partitioned)
+    // Session token: stored without __Secure- prefix, SameSite=Lax
     redirectResponse.headers.append(
       "Set-Cookie",
       "neon-auth.session_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
     );
+    // Challenge cookie: stored with __Secure- prefix, SameSite=None
+    // (needs cross-site access for OAuth redirect chain)
     redirectResponse.headers.append(
       "Set-Cookie",
-      "neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
+      "__Secure-neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None"
     );
-    // Also clear the old __Secure- prefixed cookies in case they still exist
-    // from sessions established before this fix
+    // Also clear old cookie variants from previous sessions
     redirectResponse.headers.append(
       "Set-Cookie",
       "__Secure-neon-auth.session_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None; Partitioned"
     );
     redirectResponse.headers.append(
       "Set-Cookie",
-      "__Secure-neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None; Partitioned"
+      "neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
     );
   }
 

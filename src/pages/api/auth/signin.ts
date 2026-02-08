@@ -56,13 +56,27 @@ export const GET: APIRoute = async ({ request, redirect }) => {
 
 /**
  * Fix cookies for Safari compatibility.
- * Safari (especially mobile) does not reliably send Partitioned cookies with
- * SameSite=None during cross-site OAuth redirect chains. Since the challenge
- * cookie is first-party (same domain), SameSite=Lax is correct and works
- * across all browsers. We also remove the Partitioned attribute and __Secure-
- * prefix since SameSite=Lax doesn't require them.
+ *
+ * The challenge cookie (session_challange) must survive the cross-site OAuth
+ * redirect chain (our domain → Google → our domain via /neon-auth/callback).
+ * Safari's ITP drops Partitioned cookies, so we remove that attribute but keep
+ * SameSite=None and the __Secure- prefix so the cookie is sent on the cross-site
+ * redirect and the name matches what Neon Auth expects.
+ *
+ * Session cookies only need first-party access, so SameSite=Lax is fine.
+ * We strip the __Secure- prefix from session cookies since Lax doesn't require it,
+ * and our callback/auth code re-adds the prefix when talking to Neon Auth server-side.
  */
 function fixCookieForSafari(cookie: string): string {
+  const isChallengeCookie = cookie.includes("session_challange");
+
+  if (isChallengeCookie) {
+    // Keep __Secure- prefix and SameSite=None (needed for cross-site redirect),
+    // only remove Partitioned (broken in Safari ITP)
+    return cookie.replace(/;\s*Partitioned/gi, "");
+  }
+
+  // Session cookies: strip prefix, use Lax, remove Partitioned
   return cookie
     .replace(/^__Secure-/i, "")
     .replace(/;\s*Partitioned/gi, "")

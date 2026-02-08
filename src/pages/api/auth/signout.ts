@@ -41,8 +41,16 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       "neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax"
     );
   } else {
-    // Production cookies - stored without __Secure- prefix for Safari compatibility
-    // (SameSite=Lax, Secure, no Partitioned)
+    // Production cookies - __Secure- prefix with SameSite=Lax (current format)
+    redirectResponse.headers.append(
+      "Set-Cookie",
+      "__Secure-neon-auth.session_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
+    );
+    redirectResponse.headers.append(
+      "Set-Cookie",
+      "__Secure-neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
+    );
+    // Clear old non-prefixed cookies from sessions established between PR #8 and this fix
     redirectResponse.headers.append(
       "Set-Cookie",
       "neon-auth.session_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
@@ -51,8 +59,7 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       "Set-Cookie",
       "neon-auth.session_challange=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
     );
-    // Also clear the old __Secure- prefixed cookies in case they still exist
-    // from sessions established before this fix
+    // Clear original Neon Auth format cookies (SameSite=None, Partitioned)
     redirectResponse.headers.append(
       "Set-Cookie",
       "__Secure-neon-auth.session_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None; Partitioned"

@@ -29,6 +29,11 @@ interface VoteWithEntries {
   thirdPlace: Entry | null;
 }
 
+interface AdminGame {
+  slug: string;
+  name: string;
+}
+
 interface AdminVotingPageProps {
   user: User;
   votesWithEntries: VoteWithEntries[];
@@ -37,6 +42,7 @@ interface AdminVotingPageProps {
   votingLocked: boolean;
   revealResults: boolean;
   message: string | null;
+  adminGames?: AdminGame[];
 }
 
 const MESSAGE_MAP: Record<string, { type: "success" | "error"; text: string }> = {
@@ -56,11 +62,12 @@ export function AdminVotingPage({
   votingLocked,
   revealResults,
   message,
+  adminGames,
 }: AdminVotingPageProps) {
   const messageInfo = message ? MESSAGE_MAP[message] : null;
   return (
     <>
-      <Header user={user} isAdmin />
+      <Header user={user} isAdmin adminGames={adminGames} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

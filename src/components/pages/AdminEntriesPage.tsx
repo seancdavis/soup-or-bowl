@@ -22,11 +22,17 @@ interface User {
   image: string | null;
 }
 
+interface AdminGame {
+  slug: string;
+  name: string;
+}
+
 interface AdminEntriesPageProps {
   user: User;
   entries: Entry[];
   revealEntries: boolean;
   message: string | null;
+  adminGames?: AdminGame[];
 }
 
 const MESSAGE_MAP: Record<string, { type: "success" | "error"; text: string }> = {
@@ -40,7 +46,7 @@ const MESSAGE_MAP: Record<string, { type: "success" | "error"; text: string }> =
   not_proxy_entry: { type: "error", text: "Only proxy entries can be deleted from admin." },
 };
 
-export function AdminEntriesPage({ user, entries, revealEntries, message }: AdminEntriesPageProps) {
+export function AdminEntriesPage({ user, entries, revealEntries, message, adminGames }: AdminEntriesPageProps) {
   const entriesNeedingPower = entries.filter((e) => e.needsPower).length;
   const entriesWithNotes = entries.filter((e) => e.notes).length;
   const proxyEntries = entries.filter((e) => e.userEmail.endsWith("@proxy.local"));
@@ -48,7 +54,7 @@ export function AdminEntriesPage({ user, entries, revealEntries, message }: Admi
 
   return (
     <>
-      <Header user={user} isAdmin />
+      <Header user={user} isAdmin adminGames={adminGames} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 
@@ -79,10 +85,10 @@ export function AdminEntriesPage({ user, entries, revealEntries, message }: Admi
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <a href="/squares/admin">
+              <a href="/squares">
                 <Button variant="secondary" size="sm">
                   <Grid3X3 className="w-4 h-4" />
-                  Squares Admin
+                  Squares
                 </Button>
               </a>
               <a href="/vote/admin">

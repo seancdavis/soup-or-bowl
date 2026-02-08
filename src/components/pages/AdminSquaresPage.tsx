@@ -30,8 +30,18 @@ interface WinnerInfo {
   winningSquare: Square | null;
 }
 
+interface AdminGame {
+  slug: string;
+  name: string;
+}
+
 interface AdminSquaresPageProps {
   user: User;
+  isAdmin?: boolean;
+  isPartyUser?: boolean;
+  adminGames?: AdminGame[];
+  gameSlug: string;
+  gameName: string;
   grid: (Square | null)[][];
   rowNumbers: number[];
   colNumbers: number[];
@@ -50,6 +60,11 @@ interface AdminSquaresPageProps {
 
 export function AdminSquaresPage({
   user,
+  isAdmin,
+  isPartyUser = true,
+  adminGames,
+  gameSlug,
+  gameName,
   grid,
   rowNumbers,
   colNumbers,
@@ -62,6 +77,9 @@ export function AdminSquaresPage({
   predictionResults,
   actualFinalScore,
 }: AdminSquaresPageProps) {
+  const adminApiUrl = `/api/admin/squares/${gameSlug}`;
+  const returnTo = `/squares/${gameSlug}/admin`;
+
   // Get score for each quarter
   const getScore = (quarter: number) => {
     return scores.find((s) => s.quarter === quarter);
@@ -69,18 +87,18 @@ export function AdminSquaresPage({
 
   return (
     <>
-      <Header user={user} isAdmin />
+      <Header user={user} isAdmin={isAdmin} isPartyUser={isPartyUser} adminGames={adminGames} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 
         <Container size="xl" className="relative z-10">
           {/* Back link */}
           <a
-            href="/squares"
+            href={`/squares/${gameSlug}`}
             className="inline-flex items-center gap-2 text-sm text-primary-400 hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Squares
+            Back to {gameName}
           </a>
 
           {/* Header */}
@@ -89,7 +107,7 @@ export function AdminSquaresPage({
               <Shield className="w-6 h-6 text-gold-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Squares Admin</h1>
+              <h1 className="text-2xl font-bold text-white">{gameName} Admin</h1>
               <p className="text-primary-400">
                 {totalSquaresClaimed} of 100 squares claimed
               </p>
@@ -129,9 +147,9 @@ export function AdminSquaresPage({
                   confirmLabel={squaresLocked ? "Unlock" : "Lock Game"}
                   variant="warning"
                 >
-                  <form action="/api/admin/squares" method="POST">
+                  <form action={adminApiUrl} method="POST">
                     <input type="hidden" name="action" value="toggle_squares_locked" />
-                    <input type="hidden" name="return_to" value="/squares/admin" />
+                    <input type="hidden" name="return_to" value={returnTo} />
                     <Button
                       type="submit"
                       variant={squaresLocked ? "primary" : "secondary"}
@@ -164,9 +182,9 @@ export function AdminSquaresPage({
                 {squaresLocked ? (
                   <span className="text-2xl font-bold text-white">{maxSquaresPerUser}</span>
                 ) : (
-                  <form action="/api/admin/squares" method="POST" className="flex items-center gap-2">
+                  <form action={adminApiUrl} method="POST" className="flex items-center gap-2">
                     <input type="hidden" name="action" value="set_max_squares" />
-                    <input type="hidden" name="return_to" value="/squares/admin" />
+                    <input type="hidden" name="return_to" value={returnTo} />
                     <input
                       type="number"
                       name="max_squares"
@@ -209,13 +227,13 @@ export function AdminSquaresPage({
                           )}
                         </div>
                         <form
-                          action="/api/admin/squares"
+                          action={adminApiUrl}
                           method="POST"
                           className="flex flex-wrap items-center gap-2 flex-1"
                         >
                           <input type="hidden" name="action" value="set_score" />
                           <input type="hidden" name="quarter" value={quarter} />
-                          <input type="hidden" name="return_to" value="/squares/admin" />
+                          <input type="hidden" name="return_to" value={returnTo} />
 
                           <div className="flex items-center gap-2">
                             <label className="text-green-400 text-sm font-medium">SEA</label>
@@ -309,6 +327,7 @@ export function AdminSquaresPage({
               <AdminProxyGridPicker
                 initialGrid={grid}
                 maxSquaresPerUser={maxSquaresPerUser}
+                apiBaseUrl={adminApiUrl}
               />
             )}
           </Card>
@@ -328,12 +347,12 @@ export function AdminSquaresPage({
             <div className="p-4 bg-primary-800/50 rounded-lg mb-4">
               <p className="text-white font-medium mb-3">Actual Final Score</p>
               <form
-                action="/api/admin/squares"
+                action={adminApiUrl}
                 method="POST"
                 className="flex flex-wrap items-center gap-3"
               >
                 <input type="hidden" name="action" value="set_final_score" />
-                <input type="hidden" name="return_to" value="/squares/admin" />
+                <input type="hidden" name="return_to" value={returnTo} />
 
                 <div className="flex items-center gap-2">
                   <label className="text-green-400 text-sm font-medium">SEA</label>
@@ -373,12 +392,12 @@ export function AdminSquaresPage({
               <div className="p-4 bg-primary-800/50 rounded-lg mb-4">
                 <p className="text-white font-medium mb-3">Add Proxy Prediction</p>
                 <form
-                  action="/api/admin/squares"
+                  action={adminApiUrl}
                   method="POST"
                   className="space-y-3"
                 >
                   <input type="hidden" name="action" value="proxy_prediction" />
-                  <input type="hidden" name="return_to" value="/squares/admin" />
+                  <input type="hidden" name="return_to" value={returnTo} />
 
                   <div>
                     <label className="text-white text-sm font-medium mb-1 block">Player Name</label>
@@ -484,10 +503,10 @@ export function AdminSquaresPage({
                                 confirmLabel="Delete"
                                 variant="danger"
                               >
-                                <form action="/api/admin/squares" method="POST">
+                                <form action={adminApiUrl} method="POST">
                                   <input type="hidden" name="action" value="delete_prediction" />
                                   <input type="hidden" name="prediction_id" value={prediction.id} />
-                                  <input type="hidden" name="return_to" value="/squares/admin" />
+                                  <input type="hidden" name="return_to" value={returnTo} />
                                   <button
                                     type="submit"
                                     className="text-red-400 hover:text-red-300 text-xs transition-colors"
@@ -528,9 +547,9 @@ export function AdminSquaresPage({
                   confirmLabel="Clear Scores"
                   variant="danger"
                 >
-                  <form action="/api/admin/squares" method="POST">
+                  <form action={adminApiUrl} method="POST">
                     <input type="hidden" name="action" value="clear_all_scores" />
-                    <input type="hidden" name="return_to" value="/squares/admin" />
+                    <input type="hidden" name="return_to" value={returnTo} />
                     <Button type="submit" variant="ghost" size="sm" className="text-red-400 hover:bg-red-500/20">
                       Clear Scores
                     </Button>
@@ -551,9 +570,9 @@ export function AdminSquaresPage({
                   confirmLabel="Clear All Squares"
                   variant="danger"
                 >
-                  <form action="/api/admin/squares" method="POST">
+                  <form action={adminApiUrl} method="POST">
                     <input type="hidden" name="action" value="clear_all_squares" />
-                    <input type="hidden" name="return_to" value="/squares/admin" />
+                    <input type="hidden" name="return_to" value={returnTo} />
                     <Button type="submit" variant="ghost" size="sm" className="text-red-400 hover:bg-red-500/20">
                       Clear Squares
                     </Button>
@@ -574,9 +593,9 @@ export function AdminSquaresPage({
                   confirmLabel="Reset Everything"
                   variant="danger"
                 >
-                  <form action="/api/admin/squares" method="POST">
+                  <form action={adminApiUrl} method="POST">
                     <input type="hidden" name="action" value="reset_game" />
-                    <input type="hidden" name="return_to" value="/squares/admin" />
+                    <input type="hidden" name="return_to" value={returnTo} />
                     <Button type="submit" variant="ghost" size="sm" className="text-red-400 hover:bg-red-500/20">
                       <RefreshCw className="w-4 h-4" />
                       Reset Game

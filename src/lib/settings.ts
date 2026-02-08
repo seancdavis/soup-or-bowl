@@ -111,50 +111,6 @@ export async function getVotingSettings(): Promise<{
 }
 
 /**
- * Get the squares_locked setting. Defaults to false if not set.
- */
-export async function getSquaresLockedSetting(): Promise<boolean> {
-  const value = await getSetting(SETTING_KEYS.SQUARES_LOCKED);
-  return value === "true";
-}
-
-/**
- * Set the squares_locked setting.
- */
-export async function setSquaresLockedSetting(locked: boolean): Promise<void> {
-  await setSetting(SETTING_KEYS.SQUARES_LOCKED, locked ? "true" : "false");
-}
-
-/**
- * Get the max_squares_per_user setting. Defaults to 5 if not set.
- */
-export async function getMaxSquaresPerUserSetting(): Promise<number> {
-  const value = await getSetting(SETTING_KEYS.MAX_SQUARES_PER_USER);
-  return value ? parseInt(value, 10) : 5;
-}
-
-/**
- * Set the max_squares_per_user setting.
- */
-export async function setMaxSquaresPerUserSetting(max: number): Promise<void> {
-  await setSetting(SETTING_KEYS.MAX_SQUARES_PER_USER, max.toString());
-}
-
-/**
- * Get all squares-related settings at once.
- */
-export async function getSquaresSettings(): Promise<{
-  squaresLocked: boolean;
-  maxSquaresPerUser: number;
-}> {
-  const [squaresLocked, maxSquaresPerUser] = await Promise.all([
-    getSquaresLockedSetting(),
-    getMaxSquaresPerUserSetting(),
-  ]);
-  return { squaresLocked, maxSquaresPerUser };
-}
-
-/**
  * Get the actual final score for score prediction calculations.
  */
 export async function getFinalScoreSetting(): Promise<{

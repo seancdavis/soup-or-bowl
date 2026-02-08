@@ -1,0 +1,77 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { AdminSquaresPage } from "../../../components/pages";
+import { getUserWithApproval } from "../../../lib/auth";
+import { getGameBySlug, isGameAdmin as checkGameAdmin, getUserAdminGames } from "../../../lib/games";
+import { getFinalScoreSetting } from "../../../lib/settings";
+import {
+  getAllSquares,
+  getAxisNumbers,
+  getScores,
+  calculateWinners,
+  buildGrid,
+  getAllPredictions,
+  calculatePredictionResults,
+} from "../../../lib/squares";
+
+const { slug } = Astro.params;
+
+const auth = await getUserWithApproval(Astro.request);
+
+if (!auth) {
+  return Astro.redirect("/login");
+}
+
+const { user, isApproved } = auth;
+
+const game = await getGameBySlug(slug!);
+if (!game) {
+  return new Response(null, { status: 404 });
+}
+
+const gameAdmin = await checkGameAdmin(user.email, game.id);
+if (!gameAdmin) {
+  return new Response(null, { status: 404 });
+}
+
+const [allSquares, axisNumbers, scores, winners, predictions, actualFinalScore, adminGames] = await Promise.all([
+  getAllSquares(game.id),
+  getAxisNumbers(game.id),
+  getScores(),
+  calculateWinners(game.id),
+  getAllPredictions(game.id),
+  getFinalScoreSetting(),
+  getUserAdminGames(user.email),
+]);
+
+const grid = buildGrid(allSquares);
+const totalSquaresClaimed = allSquares.length;
+const predictionResults = calculatePredictionResults(
+  predictions,
+  actualFinalScore.seahawks,
+  actualFinalScore.patriots,
+);
+---
+
+<Layout title={`${game.name} Admin - SoupOrBowl 2026`}>
+  <AdminSquaresPage
+    user={user}
+    isAdmin={isApproved && auth.isAdmin}
+    isPartyUser={isApproved}
+    adminGames={adminGames}
+    gameSlug={game.slug}
+    gameName={game.name}
+    grid={grid}
+    rowNumbers={axisNumbers.rows}
+    colNumbers={axisNumbers.cols}
+    scores={scores}
+    winners={winners}
+    squaresLocked={game.isLocked}
+    maxSquaresPerUser={game.maxSquaresPerUser}
+    totalSquaresClaimed={totalSquaresClaimed}
+    predictions={predictions}
+    predictionResults={predictionResults}
+    actualFinalScore={actualFinalScore}
+    client:load
+  />
+</Layout>

@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import { UnauthorizedPage } from "../components/pages";
 import { getUserWithApproval } from "../lib/auth";
+import { getUserGames } from "../lib/games";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -13,6 +14,12 @@ if (!auth) {
 // Approved users should go to home
 if (auth.isApproved) {
   return Astro.redirect("/");
+}
+
+// Game-only users should go to squares
+const userGames = await getUserGames(auth.user.email);
+if (userGames.length > 0) {
+  return Astro.redirect("/squares");
 }
 
 const { user } = auth;

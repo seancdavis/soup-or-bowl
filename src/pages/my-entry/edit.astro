@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { MyEntryPage } from "../../components/pages";
 import { getUserWithApproval } from "../../lib/auth";
 import { getEntryByEmail } from "../../lib/entries";
+import { getUserAdminGames } from "../../lib/games";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -15,9 +16,12 @@ if (!auth.isApproved) {
 }
 
 const { user } = auth;
-const entry = await getEntryByEmail(user.email);
+const [entry, adminGames] = await Promise.all([
+  getEntryByEmail(user.email),
+  getUserAdminGames(user.email),
+]);
 ---
 
 <Layout title="Edit Entry - SoupOrBowl 2026">
-  <MyEntryPage user={user} entry={entry} isEditing isAdmin={auth.isAdmin} />
+  <MyEntryPage user={user} entry={entry} isEditing isAdmin={auth.isAdmin} adminGames={adminGames} />
 </Layout>

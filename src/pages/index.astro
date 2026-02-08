@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import { HomePage } from "../components/pages";
 import { getUserWithApproval } from "../lib/auth";
 import { getEntryByEmail } from "../lib/entries";
+import { getUserGames, getUserAdminGames } from "../lib/games";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -11,13 +12,21 @@ if (!auth) {
 }
 
 if (!auth.isApproved) {
+  // Not a party user — check if they have game access
+  const userGames = await getUserGames(auth.user.email);
+  if (userGames.length > 0) {
+    return Astro.redirect("/squares");
+  }
   return Astro.redirect("/unauthorized");
 }
 
 const { user } = auth;
-const entry = await getEntryByEmail(user.email);
+const [entry, adminGames] = await Promise.all([
+  getEntryByEmail(user.email),
+  getUserAdminGames(user.email),
+]);
 ---
 
 <Layout title="SoupOrBowl 2026 - Save the Date">
-  <HomePage user={user} hasEntry={!!entry} isAdmin={auth.isAdmin} />
+  <HomePage user={user} hasEntry={!!entry} isAdmin={auth.isAdmin} adminGames={adminGames} />
 </Layout>

@@ -12,60 +12,79 @@ import {
 } from "../db";
 
 /**
- * Get all claimed squares.
+ * Get all claimed squares for a game.
  */
-export async function getAllSquares(): Promise<Square[]> {
-  return await db.select().from(squares);
+export async function getAllSquares(gameId: number): Promise<Square[]> {
+  return await db
+    .select()
+    .from(squares)
+    .where(eq(squares.gameId, gameId));
 }
 
 /**
- * Get a specific square by row and col.
+ * Get a specific square by row and col within a game.
  */
-export async function getSquare(row: number, col: number): Promise<Square | null> {
+export async function getSquare(
+  gameId: number,
+  row: number,
+  col: number
+): Promise<Square | null> {
   const [square] = await db
     .select()
     .from(squares)
-    .where(and(eq(squares.row, row), eq(squares.col, col)))
+    .where(
+      and(
+        eq(squares.gameId, gameId),
+        eq(squares.row, row),
+        eq(squares.col, col)
+      )
+    )
     .limit(1);
 
   return square || null;
 }
 
 /**
- * Get all squares claimed by a specific user.
+ * Get all squares claimed by a specific user in a game.
  */
-export async function getSquaresByUser(email: string): Promise<Square[]> {
+export async function getSquaresByUser(
+  gameId: number,
+  email: string
+): Promise<Square[]> {
   return await db
     .select()
     .from(squares)
-    .where(eq(squares.userEmail, email));
+    .where(and(eq(squares.gameId, gameId), eq(squares.userEmail, email)));
 }
 
 /**
- * Count squares claimed by a specific user.
+ * Count squares claimed by a specific user in a game.
  */
-export async function countSquaresByUser(email: string): Promise<number> {
+export async function countSquaresByUser(
+  gameId: number,
+  email: string
+): Promise<number> {
   const [result] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(squares)
-    .where(eq(squares.userEmail, email));
+    .where(and(eq(squares.gameId, gameId), eq(squares.userEmail, email)));
 
   return result?.count || 0;
 }
 
 /**
- * Claim a square for a user.
+ * Claim a square for a user in a game.
  * Returns the claimed square or null if already taken.
  */
 export async function claimSquare(
+  gameId: number,
   row: number,
   col: number,
   userEmail: string,
   userName: string | null,
   userImage: string | null
 ): Promise<Square | null> {
-  // Check if already claimed
-  const existing = await getSquare(row, col);
+  const existing = await getSquare(gameId, row, col);
   if (existing) {
     return null;
   }
@@ -73,6 +92,7 @@ export async function claimSquare(
   const [newSquare] = await db
     .insert(squares)
     .values({
+      gameId,
       row,
       col,
       userEmail,
@@ -89,6 +109,7 @@ export async function claimSquare(
  * Release a square (only the owner can release their own square).
  */
 export async function releaseSquare(
+  gameId: number,
   row: number,
   col: number,
   userEmail: string
@@ -97,6 +118,7 @@ export async function releaseSquare(
     .delete(squares)
     .where(
       and(
+        eq(squares.gameId, gameId),
         eq(squares.row, row),
         eq(squares.col, col),
         eq(squares.userEmail, userEmail)
@@ -111,6 +133,7 @@ export async function releaseSquare(
  * Admin release: release a square regardless of ownership.
  */
 export async function adminReleaseSquare(
+  gameId: number,
   row: number,
   col: number
 ): Promise<boolean> {
@@ -118,6 +141,7 @@ export async function adminReleaseSquare(
     .delete(squares)
     .where(
       and(
+        eq(squares.gameId, gameId),
         eq(squares.row, row),
         eq(squares.col, col)
       )
@@ -128,25 +152,33 @@ export async function adminReleaseSquare(
 }
 
 /**
- * Release all squares claimed by a specific user/proxy email.
+ * Release all squares claimed by a specific user/proxy email in a game.
  */
-export async function releaseSquaresByUser(userEmail: string): Promise<number> {
+export async function releaseSquaresByUser(
+  gameId: number,
+  userEmail: string
+): Promise<number> {
   const result = await db
     .delete(squares)
-    .where(eq(squares.userEmail, userEmail))
+    .where(and(eq(squares.gameId, gameId), eq(squares.userEmail, userEmail)))
     .returning();
 
   return result.length;
 }
 
 /**
- * Get all axis numbers.
+ * Get all axis numbers for a game.
  */
-export async function getAxisNumbers(): Promise<{
+export async function getAxisNumbers(
+  gameId: number
+): Promise<{
   rows: number[];
   cols: number[];
 }> {
-  const numbers = await db.select().from(squaresAxisNumbers);
+  const numbers = await db
+    .select()
+    .from(squaresAxisNumbers)
+    .where(eq(squaresAxisNumbers.gameId, gameId));
 
   const rows = new Array(10).fill(-1);
   const cols = new Array(10).fill(-1);
@@ -163,14 +195,15 @@ export async function getAxisNumbers(): Promise<{
 }
 
 /**
- * Generate new random axis numbers.
+ * Generate new random axis numbers for a game.
  * Called when admin locks the game.
  */
-export async function generateAxisNumbers(): Promise<{
+export async function generateAxisNumbers(
+  gameId: number
+): Promise<{
   rows: number[];
   cols: number[];
 }> {
-  // Fisher-Yates shuffle for random permutation
   const shuffle = (arr: number[]): number[] => {
     const result = [...arr];
     for (let i = result.length - 1; i > 0; i--) {
@@ -184,19 +217,23 @@ export async function generateAxisNumbers(): Promise<{
   const rows = shuffle(baseNumbers);
   const cols = shuffle(baseNumbers);
 
-  // Clear existing axis numbers
-  await db.delete(squaresAxisNumbers);
+  // Clear existing axis numbers for this game
+  await db
+    .delete(squaresAxisNumbers)
+    .where(eq(squaresAxisNumbers.gameId, gameId));
 
   // Insert new axis numbers
   const now = new Date();
   const insertValues = [
     ...rows.map((value, position) => ({
+      gameId,
       axis: "row",
       position,
       value,
       generatedAt: now,
     })),
     ...cols.map((value, position) => ({
+      gameId,
       axis: "col",
       position,
       value,
@@ -210,7 +247,7 @@ export async function generateAxisNumbers(): Promise<{
 }
 
 /**
- * Get all quarter scores.
+ * Get all quarter scores (shared across all games).
  */
 export async function getScores(): Promise<SquaresScore[]> {
   return await db
@@ -220,7 +257,7 @@ export async function getScores(): Promise<SquaresScore[]> {
 }
 
 /**
- * Set score for a quarter.
+ * Set score for a quarter (shared across all games).
  */
 export async function setScore(
   quarter: number,
@@ -262,7 +299,9 @@ export async function setScore(
 /**
  * Calculate winners for each quarter based on last digit of scores.
  */
-export async function calculateWinners(): Promise<
+export async function calculateWinners(
+  gameId: number
+): Promise<
   Array<{
     quarter: number;
     seahawksLastDigit: number | null;
@@ -272,15 +311,19 @@ export async function calculateWinners(): Promise<
 > {
   const [allScores, axisNumbers, allSquares] = await Promise.all([
     getScores(),
-    getAxisNumbers(),
-    getAllSquares(),
+    getAxisNumbers(gameId),
+    getAllSquares(gameId),
   ]);
 
   const results = [];
 
   for (let quarter = 1; quarter <= 4; quarter++) {
     const score = allScores.find((s) => s.quarter === quarter);
-    if (!score || score.seahawksScore === null || score.patriotsScore === null) {
+    if (
+      !score ||
+      score.seahawksScore === null ||
+      score.patriotsScore === null
+    ) {
       results.push({
         quarter,
         seahawksLastDigit: null,
@@ -301,8 +344,9 @@ export async function calculateWinners(): Promise<
     let winningSquare: Square | null = null;
     if (winningRow !== -1 && winningCol !== -1) {
       winningSquare =
-        allSquares.find((s) => s.row === winningRow && s.col === winningCol) ||
-        null;
+        allSquares.find(
+          (s) => s.row === winningRow && s.col === winningCol
+        ) || null;
     }
 
     results.push({
@@ -325,7 +369,12 @@ export function buildGrid(squares: Square[]): (Square | null)[][] {
   );
 
   for (const square of squares) {
-    if (square.row >= 0 && square.row < 10 && square.col >= 0 && square.col < 10) {
+    if (
+      square.row >= 0 &&
+      square.row < 10 &&
+      square.col >= 0 &&
+      square.col < 10
+    ) {
       grid[square.row][square.col] = square;
     }
   }
@@ -334,14 +383,14 @@ export function buildGrid(squares: Square[]): (Square | null)[][] {
 }
 
 /**
- * Clear all squares (admin only, for testing/reset).
+ * Clear all squares for a game (admin only, for testing/reset).
  */
-export async function clearAllSquares(): Promise<void> {
-  await db.delete(squares);
+export async function clearAllSquares(gameId: number): Promise<void> {
+  await db.delete(squares).where(eq(squares.gameId, gameId));
 }
 
 /**
- * Clear all scores (admin only, for testing/reset).
+ * Clear all scores (admin only, for testing/reset). Shared across games.
  */
 export async function clearAllScores(): Promise<void> {
   await db.delete(squaresScores);
@@ -351,40 +400,54 @@ export async function clearAllScores(): Promise<void> {
 export type { ScorePrediction };
 
 /**
- * Get all score predictions.
+ * Get all score predictions for a game.
  */
-export async function getAllPredictions(): Promise<ScorePrediction[]> {
+export async function getAllPredictions(
+  gameId: number
+): Promise<ScorePrediction[]> {
   return await db
     .select()
     .from(scorePredictions)
+    .where(eq(scorePredictions.gameId, gameId))
     .orderBy(scorePredictions.createdAt);
 }
 
 /**
- * Get a prediction by user email.
+ * Get a prediction by user email within a game.
  */
-export async function getPredictionByEmail(email: string): Promise<ScorePrediction | null> {
+export async function getPredictionByEmail(
+  gameId: number,
+  email: string
+): Promise<ScorePrediction | null> {
   const [prediction] = await db
     .select()
     .from(scorePredictions)
-    .where(eq(scorePredictions.userEmail, email))
+    .where(
+      and(
+        eq(scorePredictions.gameId, gameId),
+        eq(scorePredictions.userEmail, email)
+      )
+    )
     .limit(1);
 
   return prediction || null;
 }
 
 /**
- * Create or update a score prediction.
+ * Create or update a score prediction within a game.
  */
-export async function upsertPrediction(data: {
-  userEmail: string;
-  userName: string | null;
-  seahawksScore: number;
-  patriotsScore: number;
-  isProxy?: boolean;
-  createdBy?: string;
-}): Promise<ScorePrediction> {
-  const existing = await getPredictionByEmail(data.userEmail);
+export async function upsertPrediction(
+  gameId: number,
+  data: {
+    userEmail: string;
+    userName: string | null;
+    seahawksScore: number;
+    patriotsScore: number;
+    isProxy?: boolean;
+    createdBy?: string;
+  }
+): Promise<ScorePrediction> {
+  const existing = await getPredictionByEmail(gameId, data.userEmail);
 
   if (existing) {
     const [updated] = await db
@@ -394,7 +457,12 @@ export async function upsertPrediction(data: {
         patriotsScore: data.patriotsScore,
         updatedAt: new Date(),
       })
-      .where(eq(scorePredictions.userEmail, data.userEmail))
+      .where(
+        and(
+          eq(scorePredictions.gameId, gameId),
+          eq(scorePredictions.userEmail, data.userEmail)
+        )
+      )
       .returning();
     return updated;
   }
@@ -402,6 +470,7 @@ export async function upsertPrediction(data: {
   const [newPrediction] = await db
     .insert(scorePredictions)
     .values({
+      gameId,
       userEmail: data.userEmail,
       userName: data.userName,
       seahawksScore: data.seahawksScore,
@@ -429,10 +498,12 @@ export async function deletePrediction(id: number): Promise<boolean> {
 }
 
 /**
- * Clear all predictions (admin only, for reset).
+ * Clear all predictions for a game (admin only, for reset).
  */
-export async function clearAllPredictions(): Promise<void> {
-  await db.delete(scorePredictions);
+export async function clearAllPredictions(gameId: number): Promise<void> {
+  await db
+    .delete(scorePredictions)
+    .where(eq(scorePredictions.gameId, gameId));
 }
 
 /**

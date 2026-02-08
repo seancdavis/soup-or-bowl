@@ -2,6 +2,7 @@ export { AdminEntriesPage } from "./AdminEntriesPage";
 export { AdminSquaresPage } from "./AdminSquaresPage";
 export { AdminVotingPage } from "./AdminVotingPage";
 export { EntriesPage } from "./EntriesPage";
+export { GamePickerPage } from "./GamePickerPage";
 export { HomePage } from "./HomePage";
 export { LoginPage } from "./LoginPage";
 export { MyEntryPage } from "./MyEntryPage";

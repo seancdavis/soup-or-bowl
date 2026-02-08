@@ -1,6 +1,11 @@
 import { Container, Logo } from "../ui";
 import { UserMenu, NavMenu } from "../auth";
 
+interface AdminGame {
+  slug: string;
+  name: string;
+}
+
 interface HeaderProps {
   user?: {
     name: string | null;
@@ -8,9 +13,11 @@ interface HeaderProps {
     image: string | null;
   } | null;
   isAdmin?: boolean;
+  isPartyUser?: boolean;
+  adminGames?: AdminGame[];
 }
 
-export function Header({ user, isAdmin }: HeaderProps) {
+export function Header({ user, isAdmin, isPartyUser, adminGames }: HeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-primary-950/80 backdrop-blur-md border-b border-primary-800/50">
       <Container size="xl">
@@ -24,7 +31,7 @@ export function Header({ user, isAdmin }: HeaderProps) {
 
           {user && (
             <div className="flex items-center gap-3">
-              <NavMenu isAdmin={isAdmin} />
+              <NavMenu isAdmin={isAdmin} isPartyUser={isPartyUser} adminGames={adminGames} />
               <UserMenu user={user} />
             </div>
           )}

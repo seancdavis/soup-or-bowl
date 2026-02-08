@@ -9,6 +9,11 @@ interface User {
   image: string | null;
 }
 
+interface AdminGame {
+  slug: string;
+  name: string;
+}
+
 interface VotingPageProps {
   user: User;
   entries: Entry[];
@@ -16,6 +21,7 @@ interface VotingPageProps {
   votingActive: boolean;
   votingLocked: boolean;
   isAdmin?: boolean;
+  adminGames?: AdminGame[];
 }
 
 export function VotingPage({
@@ -25,6 +31,7 @@ export function VotingPage({
   votingActive,
   votingLocked,
   isAdmin,
+  adminGames,
 }: VotingPageProps) {
   // Filter out user's own entry from voting options
   const votableEntries = entries.filter((e) => e.userEmail !== user.email);
@@ -38,7 +45,7 @@ export function VotingPage({
 
   return (
     <>
-      <Header user={user} isAdmin={isAdmin} />
+      <Header user={user} isAdmin={isAdmin} adminGames={adminGames} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

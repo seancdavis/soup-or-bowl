@@ -10,17 +10,23 @@ interface User {
   image: string | null;
 }
 
+interface AdminGame {
+  slug: string;
+  name: string;
+}
+
 interface MyEntryPageProps {
   user: User;
   entry: Entry | null;
   isEditing?: boolean;
   isAdmin?: boolean;
+  adminGames?: AdminGame[];
 }
 
-export function MyEntryPage({ user, entry, isEditing = false, isAdmin }: MyEntryPageProps) {
+export function MyEntryPage({ user, entry, isEditing = false, isAdmin, adminGames }: MyEntryPageProps) {
   return (
     <>
-      <Header user={user} isAdmin={isAdmin} />
+      <Header user={user} isAdmin={isAdmin} adminGames={adminGames} />
       <main className="relative min-h-screen pt-24 pb-16">
         <PageBackground variant="simple" />
 

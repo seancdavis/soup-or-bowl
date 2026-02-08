@@ -5,6 +5,7 @@ import { getUserWithApproval } from "../../lib/auth";
 import { getAllEntries } from "../../lib/entries";
 import { getRevealEntriesSetting, getRevealResultsSetting } from "../../lib/settings";
 import { getWinner } from "../../lib/votes";
+import { getUserAdminGames } from "../../lib/games";
 
 const auth = await getUserWithApproval(Astro.request);
 
@@ -17,10 +18,11 @@ if (!auth.isApproved) {
 }
 
 const { user } = auth;
-const [entries, revealEntries, revealResults] = await Promise.all([
+const [entries, revealEntries, revealResults, adminGames] = await Promise.all([
   getAllEntries(),
   getRevealEntriesSetting(),
   getRevealResultsSetting(),
+  getUserAdminGames(user.email),
 ]);
 
 // Only fetch winner if results are revealed
@@ -35,5 +37,6 @@ const winner = revealResults ? await getWinner() : null;
     revealResults={revealResults}
     winner={winner}
     isAdmin={auth.isAdmin}
+    adminGames={adminGames}
   />
 </Layout>

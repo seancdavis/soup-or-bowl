@@ -10,7 +10,7 @@ const log = logger.scope("SIGNIN");
  */
 export const GET: APIRoute = async ({ request, redirect }) => {
   const origin = getOrigin(request);
-  const callbackURL = `${origin}/api/auth/callback?redirect=/`;
+  const callbackURL = `/api/auth/callback?redirect=/`;
 
   try {
     const response = await fetch(`${origin}/neon-auth/sign-in/social`, {
@@ -36,7 +36,7 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       log.debug("Cookies from Neon Auth:", setCookies.length);
 
       for (const cookie of setCookies) {
-        const fixedCookie = isLocalhost ? fixCookieForLocalhost(cookie) : cookie;
+        let fixedCookie = isLocalhost ? fixCookieForLocalhost(cookie) : fixCookieForSafari(cookie);
         log.debug("Original cookie:", cookie.substring(0, 80));
         log.debug("Fixed cookie:", fixedCookie.substring(0, 80));
         redirectResponse.headers.append("Set-Cookie", fixedCookie);
@@ -53,6 +53,21 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     return redirect("/login?error=oauth_failed", 302);
   }
 };
+
+/**
+ * Fix cookies for Safari compatibility.
+ * Safari (especially mobile) does not reliably send Partitioned cookies with
+ * SameSite=None during cross-site OAuth redirect chains. Since the challenge
+ * cookie is first-party (same domain), SameSite=Lax is correct and works
+ * across all browsers. We also remove the Partitioned attribute and __Secure-
+ * prefix since SameSite=Lax doesn't require them.
+ */
+function fixCookieForSafari(cookie: string): string {
+  return cookie
+    .replace(/^__Secure-/i, "")
+    .replace(/;\s*Partitioned/gi, "")
+    .replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
+}
 
 /**
  * Fix cookies for localhost by removing __Secure- prefix, Secure flag, and Partitioned.
